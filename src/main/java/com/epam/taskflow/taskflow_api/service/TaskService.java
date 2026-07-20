@@ -1,6 +1,9 @@
 package com.epam.taskflow.taskflow_api.service;
 
+import com.epam.taskflow.taskflow_api.dto.TaskRequestDTO;
+import com.epam.taskflow.taskflow_api.dto.TaskResponseDTO;
 import com.epam.taskflow.taskflow_api.exception.ResourceNotFoundException;
+import com.epam.taskflow.taskflow_api.mapper.TaskMapper;
 import com.epam.taskflow.taskflow_api.model.Task;
 import com.epam.taskflow.taskflow_api.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
@@ -16,15 +19,19 @@ import java.util.List;
 public class TaskService {
 
     private final TaskRepository taskRepository;
+    private final TaskMapper taskMapper;
 
     /**
      * Get all tasks.
      *
      * @return list of all tasks
      */
-    public List<Task> getAllTasks() {
+    public List<TaskResponseDTO> getAllTasks() {
         log.info("Fetching all tasks");
-        return taskRepository.findAll();
+        return taskRepository.findAll()
+                .stream()
+                .map(taskMapper::toResponseDTO)
+                .toList();
     }
 
     /**
@@ -34,52 +41,44 @@ public class TaskService {
      * @return the task
      * @throws ResourceNotFoundException if the task is not found
      */
-    public Task getTaskById(Long id) {
+    public TaskResponseDTO getTaskById(Long id) {
         log.info("Fetching task with id: {}", id);
-        return taskRepository.findById(id)
+        Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + id));
+        return taskMapper.toResponseDTO(task);
     }
 
     /**
      * Create a new task.
      *
-     * @param task the task to create
+     * @param requestDTO the task to create
      * @return the created task
      */
     @Transactional
-    public Task createTask(Task task) {
-        log.info("Creating task with title: {}", task.getTitle());
-        return taskRepository.save(task);
+    public TaskResponseDTO createTask(TaskRequestDTO requestDTO) {
+        log.info("Creating task with title: {}", requestDTO.getTitle());
+        Task task = taskMapper.toEntity(requestDTO);
+        Task createdTask = taskRepository.save(task);
+        return taskMapper.toResponseDTO(createdTask);
     }
 
     /**
      * Update an existing task.
      *
      * @param id the task id
-     * @param taskDetails the task details to update
+     * @param requestDTO the task details to update
      * @return the updated task
      * @throws ResourceNotFoundException if the task is not found
      */
     @Transactional
-    public Task updateTask(Long id, Task taskDetails) {
+    public TaskResponseDTO updateTask(Long id, TaskRequestDTO requestDTO) {
         log.info("Updating task with id: {}", id);
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + id));
 
-        if (taskDetails.getTitle() != null) {
-            task.setTitle(taskDetails.getTitle());
-        }
-        if (taskDetails.getDescription() != null) {
-            task.setDescription(taskDetails.getDescription());
-        }
-        if (taskDetails.getStatus() != null) {
-            task.setStatus(taskDetails.getStatus());
-        }
-        if (taskDetails.getPriority() != null) {
-            task.setPriority(taskDetails.getPriority());
-        }
-
-        return taskRepository.save(task);
+        taskMapper.updateEntityFromDTO(requestDTO, task);
+        Task updatedTask = taskRepository.save(task);
+        return taskMapper.toResponseDTO(updatedTask);
     }
 
     /**
@@ -102,9 +101,12 @@ public class TaskService {
      * @param status the task status
      * @return list of tasks with the specified status
      */
-    public List<Task> getTasksByStatus(String status) {
+    public List<TaskResponseDTO> getTasksByStatus(String status) {
         log.info("Fetching tasks with status: {}", status);
-        return taskRepository.findByStatus(status);
+        return taskRepository.findByStatus(status)
+                .stream()
+                .map(taskMapper::toResponseDTO)
+                .toList();
     }
 
     /**
@@ -113,9 +115,12 @@ public class TaskService {
      * @param priority the task priority
      * @return list of tasks with the specified priority
      */
-    public List<Task> getTasksByPriority(String priority) {
+    public List<TaskResponseDTO> getTasksByPriority(String priority) {
         log.info("Fetching tasks with priority: {}", priority);
-        return taskRepository.findByPriority(priority);
+        return taskRepository.findByPriority(priority)
+                .stream()
+                .map(taskMapper::toResponseDTO)
+                .toList();
     }
 
     /**
@@ -124,9 +129,11 @@ public class TaskService {
      * @param keyword the keyword to search for in task titles
      * @return list of tasks matching the keyword
      */
-    public List<Task> searchTasksByTitle(String keyword) {
+    public List<TaskResponseDTO> searchTasksByTitle(String keyword) {
         log.info("Searching tasks by title keyword: {}", keyword);
-        return taskRepository.findByTitleContainingIgnoreCase(keyword);
+        return taskRepository.findByTitleContainingIgnoreCase(keyword)
+                .stream()
+                .map(taskMapper::toResponseDTO)
+                .toList();
     }
 }
-
