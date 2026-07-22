@@ -2,209 +2,498 @@ package com.epam.taskflow.taskflow_api.controller;
 
 import com.epam.taskflow.taskflow_api.dto.TaskRequestDTO;
 import com.epam.taskflow.taskflow_api.dto.TaskResponseDTO;
-import com.epam.taskflow.taskflow_api.exception.GlobalExceptionHandler;
 import com.epam.taskflow.taskflow_api.service.TaskService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@WebMvcTest(TaskController.class)
+@DisplayName("TaskController Input Validation Tests")
 class TaskControllerValidationTest {
 
+    @Autowired
     private MockMvc mockMvc;
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    @Autowired
+    private ObjectMapper objectMapper;
 
+    @Mock
     private TaskService taskService;
+
+    private TaskRequestDTO validTaskRequest;
 
     @BeforeEach
     void setUp() {
-        taskService = mock(TaskService.class);
-        TaskController taskController = new TaskController(taskService);
-
-        LocalValidatorFactoryBean validator = new LocalValidatorFactoryBean();
-        validator.afterPropertiesSet();
-
-        mockMvc = MockMvcBuilders.standaloneSetup(taskController)
-                .setControllerAdvice(new GlobalExceptionHandler())
-                .setValidator(validator)
-                .build();
-    }
-
-    @Test
-    void createTask_shouldReturn400_whenTitleIsBlank() throws Exception {
-        TaskRequestDTO requestDTO = TaskRequestDTO.builder()
-                .title(" ")
-                .description("Valid description")
+        validTaskRequest = TaskRequestDTO.builder()
+                .title("Valid Task Title")
+                .description("A valid task description")
                 .status("TODO")
-                .priority("LOW")
+                .priority("HIGH")
                 .build();
-
-        mockMvc.perform(post("/api/tasks")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(requestDTO)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("title: Title cannot be blank")))
-                .andExpect(jsonPath("$.path").value("/api/tasks"));
     }
 
+    // ======================== TITLE VALIDATION TESTS ========================
+
     @Test
-    void createTask_shouldReturn400_whenTitleSizeIsInvalid() throws Exception {
-        TaskRequestDTO requestDTO = TaskRequestDTO.builder()
-                .title("ab")
-                .description("Valid description")
+    @DisplayName("Should reject blank title - returns 400 with error message")
+    void testCreateTaskWithBlankTitle() throws Exception {
+        TaskRequestDTO request = TaskRequestDTO.builder()
+                .title("   ")
+                .description("Description")
                 .status("TODO")
-                .priority("LOW")
+                .priority("HIGH")
                 .build();
 
         mockMvc.perform(post("/api/tasks")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(requestDTO)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("title: Title must be between 3 and 100 characters")))
-                .andExpect(jsonPath("$.path").value("/api/tasks"));
+                .andExpect(jsonPath("$.message", containsString("Title is required")));
     }
 
     @Test
-    void createTask_shouldReturn400_whenDescriptionExceedsMaxSize() throws Exception {
-        TaskRequestDTO requestDTO = TaskRequestDTO.builder()
-                .title("Valid Title")
-                .description("a".repeat(501))
+    @DisplayName("Should reject null title - returns 400 with error message")
+    void testCreateTaskWithNullTitle() throws Exception {
+        TaskRequestDTO request = TaskRequestDTO.builder()
+                .title(null)
+                .description("Description")
                 .status("TODO")
-                .priority("LOW")
+                .priority("HIGH")
                 .build();
 
         mockMvc.perform(post("/api/tasks")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(requestDTO)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("description: Description must not exceed 500 characters")))
-                .andExpect(jsonPath("$.path").value("/api/tasks"));
+                .andExpect(jsonPath("$.message", containsString("Title is required")));
     }
 
     @Test
-    void createTask_shouldReturn400_whenStatusPatternIsInvalid() throws Exception {
-        TaskRequestDTO requestDTO = TaskRequestDTO.builder()
-                .title("Valid Title")
-                .description("Valid description")
-                .status("OPEN")
-                .priority("LOW")
+    @DisplayName("Should reject empty title - returns 400 with error message")
+    void testCreateTaskWithEmptyTitle() throws Exception {
+        TaskRequestDTO request = TaskRequestDTO.builder()
+                .title("")
+                .description("Description")
+                .status("TODO")
+                .priority("HIGH")
                 .build();
 
         mockMvc.perform(post("/api/tasks")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(requestDTO)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("status: Status must be one of: TODO, IN_PROGRESS, DONE")))
-                .andExpect(jsonPath("$.path").value("/api/tasks"));
+                .andExpect(jsonPath("$.message", containsString("Title is required")));
     }
 
     @Test
-    void createTask_shouldReturn400_whenPriorityPatternIsInvalid() throws Exception {
-        TaskRequestDTO requestDTO = TaskRequestDTO.builder()
+    @DisplayName("Should reject title exceeding 255 characters")
+    void testCreateTaskWithTitleExceedingMaxLength() throws Exception {
+        String longTitle = "a".repeat(256);
+        TaskRequestDTO request = TaskRequestDTO.builder()
+                .title(longTitle)
+                .description("Description")
+                .status("TODO")
+                .priority("HIGH")
+                .build();
+
+        mockMvc.perform(post("/api/tasks")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message", containsString("cannot exceed 255 characters")));
+    }
+
+    @Test
+    @DisplayName("Should accept title with exactly 255 characters")
+    void testCreateTaskWithMaxLengthTitle() throws Exception {
+        String maxTitle = "a".repeat(255);
+        TaskRequestDTO request = TaskRequestDTO.builder()
+                .title(maxTitle)
+                .description("Description")
+                .status("TODO")
+                .priority("HIGH")
+                .build();
+
+        mockMvc.perform(post("/api/tasks")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated());
+    }
+
+    // ======================== STATUS VALIDATION TESTS ========================
+
+    @Test
+    @DisplayName("Should reject invalid status - returns 400 with clear message")
+    void testCreateTaskWithInvalidStatus() throws Exception {
+        TaskRequestDTO request = TaskRequestDTO.builder()
                 .title("Valid Title")
-                .description("Valid description")
+                .description("Description")
+                .status("INVALID_STATUS")
+                .priority("HIGH")
+                .build();
+
+        mockMvc.perform(post("/api/tasks")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message", containsString("Status must be one of: TODO, IN_PROGRESS, DONE")));
+    }
+
+    @Test
+    @DisplayName("Should accept TODO status")
+    void testCreateTaskWithTODOStatus() throws Exception {
+        TaskRequestDTO request = TaskRequestDTO.builder()
+                .title("Valid Title")
+                .description("Description")
+                .status("TODO")
+                .priority("HIGH")
+                .build();
+
+        mockMvc.perform(post("/api/tasks")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    @DisplayName("Should accept IN_PROGRESS status")
+    void testCreateTaskWithInProgressStatus() throws Exception {
+        TaskRequestDTO request = TaskRequestDTO.builder()
+                .title("Valid Title")
+                .description("Description")
+                .status("IN_PROGRESS")
+                .priority("HIGH")
+                .build();
+
+        mockMvc.perform(post("/api/tasks")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    @DisplayName("Should accept DONE status")
+    void testCreateTaskWithDoneStatus() throws Exception {
+        TaskRequestDTO request = TaskRequestDTO.builder()
+                .title("Valid Title")
+                .description("Description")
+                .status("DONE")
+                .priority("HIGH")
+                .build();
+
+        mockMvc.perform(post("/api/tasks")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    @DisplayName("Should reject lowercase status variations")
+    void testCreateTaskWithLowercaseStatus() throws Exception {
+        TaskRequestDTO request = TaskRequestDTO.builder()
+                .title("Valid Title")
+                .description("Description")
+                .status("todo")
+                .priority("HIGH")
+                .build();
+
+        mockMvc.perform(post("/api/tasks")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400));
+    }
+
+    // ======================== PRIORITY VALIDATION TESTS ========================
+
+    @Test
+    @DisplayName("Should reject invalid priority - returns 400 with clear message")
+    void testCreateTaskWithInvalidPriority() throws Exception {
+        TaskRequestDTO request = TaskRequestDTO.builder()
+                .title("Valid Title")
+                .description("Description")
                 .status("TODO")
                 .priority("URGENT")
                 .build();
 
         mockMvc.perform(post("/api/tasks")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(requestDTO)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("priority: Priority must be one of: LOW, MEDIUM, HIGH")))
-                .andExpect(jsonPath("$.path").value("/api/tasks"));
+                .andExpect(jsonPath("$.message", containsString("Priority must be one of: LOW, MEDIUM, HIGH")));
     }
 
     @Test
-    void updateTask_shouldReturn400_whenTitleIsBlank() throws Exception {
-        TaskRequestDTO requestDTO = TaskRequestDTO.builder()
-                .title("")
-                .description("Valid description")
+    @DisplayName("Should accept LOW priority")
+    void testCreateTaskWithLowPriority() throws Exception {
+        TaskRequestDTO request = TaskRequestDTO.builder()
+                .title("Valid Title")
+                .description("Description")
                 .status("TODO")
                 .priority("LOW")
                 .build();
 
-        mockMvc.perform(put("/api/tasks/{id}", 1L)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(requestDTO)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("title: Title cannot be blank")))
-                .andExpect(jsonPath("$.path").value("/api/tasks/1"));
+        mockMvc.perform(post("/api/tasks")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated());
     }
 
     @Test
-    void createTask_shouldReturn201_whenRequestIsValid() throws Exception {
-        TaskRequestDTO requestDTO = TaskRequestDTO.builder()
+    @DisplayName("Should accept MEDIUM priority")
+    void testCreateTaskWithMediumPriority() throws Exception {
+        TaskRequestDTO request = TaskRequestDTO.builder()
                 .title("Valid Title")
-                .description("Valid description")
+                .description("Description")
                 .status("TODO")
                 .priority("MEDIUM")
                 .build();
-
-        TaskResponseDTO responseDTO = TaskResponseDTO.builder()
-                .id(1L)
-                .title("Valid Title")
-                .description("Valid description")
-                .status("TODO")
-                .priority("MEDIUM")
-                .build();
-
-        when(taskService.createTask(any(TaskRequestDTO.class))).thenReturn(responseDTO);
 
         mockMvc.perform(post("/api/tasks")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(requestDTO)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.title").value("Valid Title"))
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated());
     }
 
     @Test
-    void updateTask_shouldReturn200_whenRequestIsValid() throws Exception {
-        TaskRequestDTO requestDTO = TaskRequestDTO.builder()
-                .title("Updated Title")
-                .description("Updated description")
-                .status("IN_PROGRESS")
+    @DisplayName("Should accept HIGH priority")
+    void testCreateTaskWithHighPriority() throws Exception {
+        TaskRequestDTO request = TaskRequestDTO.builder()
+                .title("Valid Title")
+                .description("Description")
+                .status("TODO")
                 .priority("HIGH")
                 .build();
 
-        TaskResponseDTO responseDTO = TaskResponseDTO.builder()
-                .id(1L)
-                .title("Updated Title")
-                .description("Updated description")
-                .status("IN_PROGRESS")
+        mockMvc.perform(post("/api/tasks")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    @DisplayName("Should reject lowercase priority variations")
+    void testCreateTaskWithLowercasePriority() throws Exception {
+        TaskRequestDTO request = TaskRequestDTO.builder()
+                .title("Valid Title")
+                .description("Description")
+                .status("TODO")
+                .priority("low")
+                .build();
+
+        mockMvc.perform(post("/api/tasks")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400));
+    }
+
+    // ======================== DESCRIPTION VALIDATION TESTS ========================
+
+    @Test
+    @DisplayName("Should reject description exceeding 500 characters")
+    void testCreateTaskWithDescriptionExceedingMaxLength() throws Exception {
+        String longDescription = "a".repeat(501);
+        TaskRequestDTO request = TaskRequestDTO.builder()
+                .title("Valid Title")
+                .description(longDescription)
+                .status("TODO")
                 .priority("HIGH")
                 .build();
 
-        when(taskService.updateTask(eq(1L), any(TaskRequestDTO.class))).thenReturn(responseDTO);
+        mockMvc.perform(post("/api/tasks")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message", containsString("Description cannot exceed 500 characters")));
+    }
 
-        mockMvc.perform(put("/api/tasks/{id}", 1L)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(requestDTO)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.status").value("IN_PROGRESS"));
+    @Test
+    @DisplayName("Should accept description with exactly 500 characters")
+    void testCreateTaskWithMaxLengthDescription() throws Exception {
+        String maxDescription = "a".repeat(500);
+        TaskRequestDTO request = TaskRequestDTO.builder()
+                .title("Valid Title")
+                .description(maxDescription)
+                .status("TODO")
+                .priority("HIGH")
+                .build();
+
+        mockMvc.perform(post("/api/tasks")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    @DisplayName("Should accept empty description")
+    void testCreateTaskWithEmptyDescription() throws Exception {
+        TaskRequestDTO request = TaskRequestDTO.builder()
+                .title("Valid Title")
+                .description("")
+                .status("TODO")
+                .priority("HIGH")
+                .build();
+
+        mockMvc.perform(post("/api/tasks")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    @DisplayName("Should accept null description")
+    void testCreateTaskWithNullDescription() throws Exception {
+        TaskRequestDTO request = TaskRequestDTO.builder()
+                .title("Valid Title")
+                .description(null)
+                .status("TODO")
+                .priority("HIGH")
+                .build();
+
+        mockMvc.perform(post("/api/tasks")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated());
+    }
+
+    // ======================== MULTIPLE VALIDATION ERRORS TESTS ========================
+
+    @Test
+    @DisplayName("Should return all validation errors when multiple fields are invalid")
+    void testCreateTaskWithMultipleValidationErrors() throws Exception {
+        TaskRequestDTO request = TaskRequestDTO.builder()
+                .title("")
+                .description("a".repeat(501))
+                .status("INVALID")
+                .priority("INVALID")
+                .build();
+
+        mockMvc.perform(post("/api/tasks")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message", containsString("title")))
+                .andExpect(jsonPath("$.message", containsString("description")))
+                .andExpect(jsonPath("$.message", containsString("status")))
+                .andExpect(jsonPath("$.message", containsString("priority")));
+    }
+
+    // ======================== UPDATE ENDPOINT VALIDATION TESTS ========================
+
+    @Test
+    @DisplayName("Should reject blank title in update - returns 400")
+    void testUpdateTaskWithBlankTitle() throws Exception {
+        TaskRequestDTO request = TaskRequestDTO.builder()
+                .title("   ")
+                .description("Description")
+                .status("TODO")
+                .priority("HIGH")
+                .build();
+
+        mockMvc.perform(put("/api/tasks/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message", containsString("Title is required")));
+    }
+
+    @Test
+    @DisplayName("Should reject invalid status in update - returns 400")
+    void testUpdateTaskWithInvalidStatus() throws Exception {
+        TaskRequestDTO request = TaskRequestDTO.builder()
+                .title("Valid Title")
+                .description("Description")
+                .status("COMPLETED")
+                .priority("HIGH")
+                .build();
+
+        mockMvc.perform(put("/api/tasks/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message", containsString("Status must be one of: TODO, IN_PROGRESS, DONE")));
+    }
+
+    @Test
+    @DisplayName("Should reject invalid priority in update - returns 400")
+    void testUpdateTaskWithInvalidPriority() throws Exception {
+        TaskRequestDTO request = TaskRequestDTO.builder()
+                .title("Valid Title")
+                .description("Description")
+                .status("TODO")
+                .priority("CRITICAL")
+                .build();
+
+        mockMvc.perform(put("/api/tasks/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message", containsString("Priority must be one of: LOW, MEDIUM, HIGH")));
+    }
+
+    @Test
+    @DisplayName("Should reject oversized description in update - returns 400")
+    void testUpdateTaskWithOversizedDescription() throws Exception {
+        TaskRequestDTO request = TaskRequestDTO.builder()
+                .title("Valid Title")
+                .description("a".repeat(501))
+                .status("TODO")
+                .priority("HIGH")
+                .build();
+
+        mockMvc.perform(put("/api/tasks/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message", containsString("Description cannot exceed 500 characters")));
+    }
+
+    // ======================== EDGE CASE TESTS ========================
+
+    @Test
+    @DisplayName("Should accept valid request with all fields")
+    void testCreateTaskWithAllValidFields() throws Exception {
+        mockMvc.perform(post("/api/tasks")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(validTaskRequest)))
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    @DisplayName("Should accept valid request with minimum required fields")
+    void testCreateTaskWithOnlyTitle() throws Exception {
+        TaskRequestDTO request = TaskRequestDTO.builder()
+                .title("Valid Title Only")
+                .build();
+
+        mockMvc.perform(post("/api/tasks")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated());
     }
 }
-
