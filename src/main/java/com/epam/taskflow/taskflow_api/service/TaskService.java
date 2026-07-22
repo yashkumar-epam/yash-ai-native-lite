@@ -1,5 +1,6 @@
 package com.epam.taskflow.taskflow_api.service;
 
+import com.epam.taskflow.taskflow_api.dto.PagedResponseDTO;
 import com.epam.taskflow.taskflow_api.dto.TaskRequestDTO;
 import com.epam.taskflow.taskflow_api.dto.TaskResponseDTO;
 import com.epam.taskflow.taskflow_api.exception.ResourceNotFoundException;
@@ -8,6 +9,9 @@ import com.epam.taskflow.taskflow_api.model.Task;
 import com.epam.taskflow.taskflow_api.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +36,13 @@ public class TaskService {
                 .stream()
                 .map(taskMapper::toResponseDTO)
                 .toList();
+    }
+
+    public PagedResponseDTO getAllTasksPaged(int page, int size) {
+        log.info("Fetching paged tasks with page={} and size={}", page, size);
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Task> taskPage = taskRepository.findAll(pageable);
+        return buildPagedResponse(taskPage);
     }
 
     /**
@@ -109,6 +120,13 @@ public class TaskService {
                 .toList();
     }
 
+    public PagedResponseDTO getTasksByStatusPaged(String status, int page, int size) {
+        log.info("Fetching paged tasks with status={} page={} and size={}", status, page, size);
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Task> taskPage = taskRepository.findByStatus(status, pageable);
+        return buildPagedResponse(taskPage);
+    }
+
     /**
      * Get tasks by priority.
      *
@@ -123,6 +141,13 @@ public class TaskService {
                 .toList();
     }
 
+    public PagedResponseDTO getTasksByPriorityPaged(String priority, int page, int size) {
+        log.info("Fetching paged tasks with priority={} page={} and size={}", priority, page, size);
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Task> taskPage = taskRepository.findByPriority(priority, pageable);
+        return buildPagedResponse(taskPage);
+    }
+
     /**
      * Search tasks by title keyword.
      *
@@ -135,5 +160,21 @@ public class TaskService {
                 .stream()
                 .map(taskMapper::toResponseDTO)
                 .toList();
+    }
+
+    private PagedResponseDTO buildPagedResponse(Page<Task> taskPage) {
+        List<TaskResponseDTO> content = taskPage.getContent()
+                .stream()
+                .map(taskMapper::toResponseDTO)
+                .toList();
+
+        return PagedResponseDTO.builder()
+                .content(content)
+                .pageNumber(taskPage.getNumber())
+                .pageSize(taskPage.getSize())
+                .totalElements(taskPage.getTotalElements())
+                .totalPages(taskPage.getTotalPages())
+                .last(taskPage.isLast())
+                .build();
     }
 }

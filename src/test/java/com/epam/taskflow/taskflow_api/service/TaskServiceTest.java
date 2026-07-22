@@ -1,5 +1,6 @@
 package com.epam.taskflow.taskflow_api.service;
 
+import com.epam.taskflow.taskflow_api.dto.PagedResponseDTO;
 import com.epam.taskflow.taskflow_api.dto.TaskRequestDTO;
 import com.epam.taskflow.taskflow_api.dto.TaskResponseDTO;
 import com.epam.taskflow.taskflow_api.exception.ResourceNotFoundException;
@@ -8,6 +9,8 @@ import com.epam.taskflow.taskflow_api.model.Task;
 import com.epam.taskflow.taskflow_api.repository.TaskRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -19,6 +22,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -67,6 +71,40 @@ class TaskServiceTest {
         assertEquals(1, result.size());
         assertEquals("Task 1", result.get(0).getTitle());
         verify(taskRepository, times(1)).findAll();
+        verify(taskMapper, times(1)).toResponseDTO(task);
+    }
+
+    @Test
+    void getAllTasksPaged_shouldReturnPagedResponseDTO() {
+        Task task = Task.builder()
+                .id(1L)
+                .title("Task 1")
+                .status("TODO")
+                .priority("HIGH")
+                .build();
+        TaskResponseDTO responseDTO = TaskResponseDTO.builder()
+                .id(1L)
+                .title("Task 1")
+                .status("TODO")
+                .priority("HIGH")
+                .build();
+
+        PageRequest pageable = PageRequest.of(0, 10);
+        PageImpl<Task> taskPage = new PageImpl<>(List.of(task), pageable, 1);
+
+        when(taskRepository.findAll(pageable)).thenReturn(taskPage);
+        when(taskMapper.toResponseDTO(task)).thenReturn(responseDTO);
+
+        PagedResponseDTO result = taskService.getAllTasksPaged(0, 10);
+
+        assertNotNull(result);
+        assertEquals(1, result.getContent().size());
+        assertEquals(0, result.getPageNumber());
+        assertEquals(10, result.getPageSize());
+        assertEquals(1L, result.getTotalElements());
+        assertEquals(1, result.getTotalPages());
+        assertTrue(result.isLast());
+        verify(taskRepository, times(1)).findAll(pageable);
         verify(taskMapper, times(1)).toResponseDTO(task);
     }
 
@@ -241,6 +279,68 @@ class TaskServiceTest {
         assertEquals("Task not found with id: 1", exception.getMessage());
         verify(taskRepository, times(1)).findById(taskId);
         verify(taskRepository, never()).delete(org.mockito.ArgumentMatchers.any(Task.class));
+    }
+
+    @Test
+    void getTasksByStatusPaged_shouldReturnPagedResponseDTO() {
+        Task task = Task.builder()
+                .id(1L)
+                .title("Task 1")
+                .status("TODO")
+                .priority("HIGH")
+                .build();
+        TaskResponseDTO responseDTO = TaskResponseDTO.builder()
+                .id(1L)
+                .title("Task 1")
+                .status("TODO")
+                .priority("HIGH")
+                .build();
+
+        PageRequest pageable = PageRequest.of(0, 10);
+        PageImpl<Task> taskPage = new PageImpl<>(List.of(task), pageable, 1);
+
+        when(taskRepository.findByStatus("TODO", pageable)).thenReturn(taskPage);
+        when(taskMapper.toResponseDTO(task)).thenReturn(responseDTO);
+
+        PagedResponseDTO result = taskService.getTasksByStatusPaged("TODO", 0, 10);
+
+        assertNotNull(result);
+        assertEquals(1, result.getContent().size());
+        assertEquals("Task 1", result.getContent().get(0).getTitle());
+        assertEquals(1L, result.getTotalElements());
+        verify(taskRepository, times(1)).findByStatus("TODO", pageable);
+        verify(taskMapper, times(1)).toResponseDTO(task);
+    }
+
+    @Test
+    void getTasksByPriorityPaged_shouldReturnPagedResponseDTO() {
+        Task task = Task.builder()
+                .id(1L)
+                .title("Task 1")
+                .status("TODO")
+                .priority("HIGH")
+                .build();
+        TaskResponseDTO responseDTO = TaskResponseDTO.builder()
+                .id(1L)
+                .title("Task 1")
+                .status("TODO")
+                .priority("HIGH")
+                .build();
+
+        PageRequest pageable = PageRequest.of(0, 10);
+        PageImpl<Task> taskPage = new PageImpl<>(List.of(task), pageable, 1);
+
+        when(taskRepository.findByPriority("HIGH", pageable)).thenReturn(taskPage);
+        when(taskMapper.toResponseDTO(task)).thenReturn(responseDTO);
+
+        PagedResponseDTO result = taskService.getTasksByPriorityPaged("HIGH", 0, 10);
+
+        assertNotNull(result);
+        assertEquals(1, result.getContent().size());
+        assertEquals("HIGH", result.getContent().get(0).getPriority());
+        assertEquals(1, result.getTotalPages());
+        verify(taskRepository, times(1)).findByPriority("HIGH", pageable);
+        verify(taskMapper, times(1)).toResponseDTO(task);
     }
 }
 
