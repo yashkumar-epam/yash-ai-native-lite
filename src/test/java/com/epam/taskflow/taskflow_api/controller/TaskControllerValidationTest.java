@@ -7,11 +7,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.time.LocalDate;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -29,7 +31,7 @@ class TaskControllerValidationTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Mock
+    @MockBean
     private TaskService taskService;
 
     private TaskRequestDTO validTaskRequest;
@@ -471,6 +473,97 @@ class TaskControllerValidationTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value(400))
                 .andExpect(jsonPath("$.message", containsString("Description cannot exceed 500 characters")));
+    }
+
+    // ======================== DUE DATE VALIDATION TESTS ========================
+
+    @Test
+    @DisplayName("Should reject past due date - returns 400 with error message")
+    void testCreateTaskWithPastDueDate() throws Exception {
+        TaskRequestDTO request = TaskRequestDTO.builder()
+                .title("Valid Title")
+                .description("Description")
+                .status("TODO")
+                .priority("HIGH")
+                .dueDate(LocalDate.of(2020, 1, 1))
+                .build();
+
+        mockMvc.perform(post("/api/tasks")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message", containsString("Due date must be today or in the future")));
+    }
+
+    @Test
+    @DisplayName("Should accept future due date")
+    void testCreateTaskWithFutureDueDate() throws Exception {
+        TaskRequestDTO request = TaskRequestDTO.builder()
+                .title("Valid Title")
+                .description("Description")
+                .status("TODO")
+                .priority("HIGH")
+                .dueDate(LocalDate.now().plusDays(7))
+                .build();
+
+        mockMvc.perform(post("/api/tasks")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    @DisplayName("Should accept today as due date")
+    void testCreateTaskWithTodayAsDueDate() throws Exception {
+        TaskRequestDTO request = TaskRequestDTO.builder()
+                .title("Valid Title")
+                .description("Description")
+                .status("TODO")
+                .priority("HIGH")
+                .dueDate(LocalDate.now())
+                .build();
+
+        mockMvc.perform(post("/api/tasks")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    @DisplayName("Should accept null due date - field is optional")
+    void testCreateTaskWithNullDueDate() throws Exception {
+        TaskRequestDTO request = TaskRequestDTO.builder()
+                .title("Valid Title")
+                .description("Description")
+                .status("TODO")
+                .priority("HIGH")
+                .dueDate(null)
+                .build();
+
+        mockMvc.perform(post("/api/tasks")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    @DisplayName("Should reject past due date in update - returns 400")
+    void testUpdateTaskWithPastDueDate() throws Exception {
+        TaskRequestDTO request = TaskRequestDTO.builder()
+                .title("Valid Title")
+                .description("Description")
+                .status("TODO")
+                .priority("HIGH")
+                .dueDate(LocalDate.of(2019, 6, 15))
+                .build();
+
+        mockMvc.perform(put("/api/tasks/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message", containsString("Due date must be today or in the future")));
     }
 
     // ======================== EDGE CASE TESTS ========================

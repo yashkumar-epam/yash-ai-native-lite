@@ -10,6 +10,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -38,6 +39,9 @@ public class Task {
 
     @Column
     private String priority;
+
+    @Column
+    private LocalDate dueDate;
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)

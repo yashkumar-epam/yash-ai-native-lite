@@ -23,6 +23,7 @@ public class TaskMapper {
                 .description(task.getDescription())
                 .status(task.getStatus())
                 .priority(task.getPriority())
+                .dueDate(task.getDueDate())
                 .createdAt(task.getCreatedAt())
                 .updatedAt(task.getUpdatedAt())
                 .build();
@@ -40,6 +41,7 @@ public class TaskMapper {
                 .description(requestDTO.getDescription())
                 .status(requestDTO.getStatus())
                 .priority(requestDTO.getPriority())
+                .dueDate(requestDTO.getDueDate())
                 .build();
     }
 
@@ -66,6 +68,9 @@ public class TaskMapper {
         }
         if (requestDTO.getPriority() != null) {
             task.setPriority(requestDTO.getPriority());
+        }
+        if (requestDTO.getDueDate() != null) {
+            task.setDueDate(requestDTO.getDueDate());
         }
 
         return task;

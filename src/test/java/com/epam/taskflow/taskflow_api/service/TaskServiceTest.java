@@ -15,6 +15,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -142,11 +143,14 @@ class TaskServiceTest {
 
     @Test
     void createTask_shouldSaveAndReturnTaskResponseDTO() {
+        LocalDate dueDate = LocalDate.now().plusDays(7);
+
         TaskRequestDTO requestDTO = TaskRequestDTO.builder()
                 .title("New Task")
                 .description("New Desc")
                 .status("TODO")
                 .priority("MEDIUM")
+                .dueDate(dueDate)
                 .build();
 
         Task task = Task.builder()
@@ -154,6 +158,7 @@ class TaskServiceTest {
                 .description("New Desc")
                 .status("TODO")
                 .priority("MEDIUM")
+                .dueDate(dueDate)
                 .build();
 
         Task savedTask = Task.builder()
@@ -162,6 +167,7 @@ class TaskServiceTest {
                 .description("New Desc")
                 .status("TODO")
                 .priority("MEDIUM")
+                .dueDate(dueDate)
                 .build();
 
         TaskResponseDTO responseDTO = TaskResponseDTO.builder()
@@ -170,6 +176,7 @@ class TaskServiceTest {
                 .description("New Desc")
                 .status("TODO")
                 .priority("MEDIUM")
+                .dueDate(dueDate)
                 .build();
 
         when(taskMapper.toEntity(requestDTO)).thenReturn(task);
@@ -189,11 +196,14 @@ class TaskServiceTest {
     @Test
     void updateTask_shouldUpdateAndReturnTaskResponseDTO_whenTaskExists() {
         Long taskId = 1L;
+        LocalDate newDueDate = LocalDate.now().plusDays(14);
+
         TaskRequestDTO requestDTO = TaskRequestDTO.builder()
                 .title("Updated Task")
                 .description("Updated Desc")
                 .status("IN_PROGRESS")
                 .priority("HIGH")
+                .dueDate(newDueDate)
                 .build();
 
         Task existingTask = Task.builder()
@@ -210,6 +220,7 @@ class TaskServiceTest {
                 .description("Updated Desc")
                 .status("IN_PROGRESS")
                 .priority("HIGH")
+                .dueDate(newDueDate)
                 .build();
 
         TaskResponseDTO responseDTO = TaskResponseDTO.builder()
@@ -218,6 +229,7 @@ class TaskServiceTest {
                 .description("Updated Desc")
                 .status("IN_PROGRESS")
                 .priority("HIGH")
+                .dueDate(newDueDate)
                 .build();
 
         when(taskRepository.findById(taskId)).thenReturn(Optional.of(existingTask));

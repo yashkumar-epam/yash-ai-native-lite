@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Repository
@@ -40,5 +41,7 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
      * @return list of tasks with titles containing the keyword
      */
     List<Task> findByTitleContainingIgnoreCase(String keyword);
+
+    Page<Task> findByDueDateBefore(LocalDate date, Pageable pageable);
 }
 
