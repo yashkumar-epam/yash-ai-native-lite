@@ -32,5 +32,8 @@ build/
 ### VS Code ###
 .vscode/
 
-### Claude Code (contains tokens — never commit) ###
-.claude/
+### Claude Code — token files (never commit) ###
+.claude/settings.json
+.claude/settings.local.json
+### Claude Code — project memory (auto-generated, not for review) ###
+.claude/projects/
