@@ -126,6 +126,6 @@ using the template at `.claude/hooks/README.md`.
 | 2 | ✅ Done | Pagination, filtering, OpenAPI | Claude Code |
 | 3 | ✅ Done | Input validation + 26+ unit tests | Claude Code + GitHub Copilot |
 | 4 | ✅ Done | `dueDate` field via GitHub MCP issue #3 | Claude Code + GitHub MCP |
-| 5 | ⏳ | Upcoming | |
+| 5 | ✅ Done | Notes feature (Task notes CRUD) | Claude Code + specialist agents |
 | 6 | ⏳ | RAG over codebase (Day 6 needs this README) | |
 | 7 | ⏳ | End-to-end management showcase | |
