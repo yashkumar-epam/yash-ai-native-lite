@@ -1,5 +1,6 @@
 package com.epam.taskflow.taskflow_api.exception;
 
+import com.anthropic.errors.AnthropicServiceException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -36,6 +37,15 @@ public class GlobalExceptionHandler {
 
         log.warn("Validation failed: {}", validationMessage);
         return buildErrorResponse(HttpStatus.BAD_REQUEST, validationMessage, request.getRequestURI());
+    }
+
+    @ExceptionHandler(AnthropicServiceException.class)
+    public ResponseEntity<ErrorResponse> handleAnthropicServiceException(
+            AnthropicServiceException ex,
+            HttpServletRequest request) {
+        log.error("Anthropic API error: {}", ex.getMessage());
+        return buildErrorResponse(HttpStatus.SERVICE_UNAVAILABLE,
+                "AI service error: " + ex.getMessage(), request.getRequestURI());
     }
 
     @ExceptionHandler(Exception.class)
