@@ -1,6 +1,5 @@
 package com.epam.taskflow.taskflow_api.exception;
 
-import com.anthropic.errors.AnthropicServiceException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -9,6 +8,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.client.HttpStatusCodeException;
 
 import java.time.LocalDateTime;
 import java.util.stream.Collectors;
@@ -39,11 +39,11 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(HttpStatus.BAD_REQUEST, validationMessage, request.getRequestURI());
     }
 
-    @ExceptionHandler(AnthropicServiceException.class)
-    public ResponseEntity<ErrorResponse> handleAnthropicServiceException(
-            AnthropicServiceException ex,
+    @ExceptionHandler(HttpStatusCodeException.class)
+    public ResponseEntity<ErrorResponse> handleHttpStatusCodeException(
+            HttpStatusCodeException ex,
             HttpServletRequest request) {
-        log.error("Anthropic API error: {}", ex.getMessage());
+        log.error("AI service HTTP error {}: {}", ex.getStatusCode(), ex.getMessage());
         return buildErrorResponse(HttpStatus.SERVICE_UNAVAILABLE,
                 "AI service error: " + ex.getMessage(), request.getRequestURI());
     }

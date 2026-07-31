@@ -1,29 +1,25 @@
 package com.epam.taskflow.taskflow_api.config;
 
-import com.anthropic.client.AnthropicClient;
-import com.anthropic.client.okhttp.AnthropicOkHttpClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.client.RestClient;
 
 @Configuration
 @Slf4j
 public class AiConfig {
 
-    @Value("${ANTHROPIC_API_KEY:}")
-    private String apiKey;
-
     @Bean
-    public AnthropicClient anthropicClient() {
-        if (apiKey == null || apiKey.isBlank()) {
-            log.warn("ANTHROPIC_API_KEY is not set — AI features will return an error when called");
-            return AnthropicOkHttpClient.builder()
-                    .apiKey("not-configured")
-                    .build();
+    public RestClient dialRestClient(
+            @Value("${dial.endpoint}") String dialEndpoint,
+            @Value("${dial.api-key:not-configured}") String dialApiKey) {
+        if ("not-configured".equals(dialApiKey)) {
+            log.warn("DIAL_API_KEY is not set — set the DIAL_API_KEY environment variable to enable AI features");
         }
-        return AnthropicOkHttpClient.builder()
-                .apiKey(apiKey)
+        return RestClient.builder()
+                .baseUrl(dialEndpoint)
+                .defaultHeader("Api-Key", dialApiKey)
                 .build();
     }
 }

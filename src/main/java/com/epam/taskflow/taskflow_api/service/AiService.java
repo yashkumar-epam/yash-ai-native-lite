@@ -1,14 +1,13 @@
 package com.epam.taskflow.taskflow_api.service;
 
-import com.anthropic.client.AnthropicClient;
-import com.anthropic.models.messages.Message;
-import com.anthropic.models.messages.MessageCreateParams;
-import com.anthropic.models.messages.Model;
 import com.epam.taskflow.taskflow_api.dto.AiQueryRequestDTO;
 import com.epam.taskflow.taskflow_api.dto.AiQueryResponseDTO;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClient;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -16,15 +15,14 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class AiService {
 
-    private static final String MODEL_ID = "claude-opus-4-8";
     private static final int MAX_CONTEXT_FILES = 20;
     private static final int MAX_CONTEXT_CHARS = 50_000;
     private static final String SYSTEM_PROMPT =
@@ -32,7 +30,17 @@ public class AiService {
             "Answer questions about the code accurately and concisely. " +
             "Base your answers on the provided Java source files.";
 
-    private final AnthropicClient anthropicClient;
+    private final RestClient dialRestClient;
+    private final String dialModel;
+    private final String dialApiVersion;
+
+    public AiService(RestClient dialRestClient,
+                     @Value("${dial.model}") String dialModel,
+                     @Value("${dial.api-version}") String dialApiVersion) {
+        this.dialRestClient = dialRestClient;
+        this.dialModel = dialModel;
+        this.dialApiVersion = dialApiVersion;
+    }
 
     public AiQueryResponseDTO askQuestion(AiQueryRequestDTO request) {
         log.info("Processing AI question: {}", request.getQuestion());
@@ -41,29 +49,36 @@ public class AiService {
         String answer = queryModel(request.getQuestion(), context);
         return AiQueryResponseDTO.builder()
                 .answer(answer)
-                .model(MODEL_ID)
+                .model(dialModel)
                 .contextFilesUsed(sourceFiles.size())
                 .build();
     }
 
+    @SuppressWarnings("unchecked")
     String queryModel(String question, String context) {
         String userMessage = context.isBlank()
                 ? question
                 : "Context from the codebase:\n\n" + context + "\nQuestion: " + question;
 
-        MessageCreateParams params = MessageCreateParams.builder()
-                .model(Model.of(MODEL_ID))
-                .maxTokens(2048L)
-                .system(SYSTEM_PROMPT)
-                .addUserMessage(userMessage)
-                .build();
+        Map<String, Object> body = Map.of(
+                "messages", List.of(
+                        Map.of("role", "system", "content", SYSTEM_PROMPT),
+                        Map.of("role", "user", "content", userMessage)
+                ),
+                "max_tokens", 2048
+        );
 
-        Message response = anthropicClient.messages().create(params);
+        Map<String, Object> response = dialRestClient.post()
+                .uri("/openai/deployments/{model}/chat/completions?api-version={version}",
+                        dialModel, dialApiVersion)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(body)
+                .retrieve()
+                .body(new ParameterizedTypeReference<Map<String, Object>>() {});
 
-        return response.content().stream()
-                .flatMap(block -> block.text().stream())
-                .map(textBlock -> textBlock.text())
-                .collect(Collectors.joining());
+        List<Map<String, Object>> choices = (List<Map<String, Object>>) response.get("choices");
+        Map<String, Object> message = (Map<String, Object>) choices.get(0).get("message");
+        return (String) message.get("content");
     }
 
     private List<Path> loadSourceFilePaths() {

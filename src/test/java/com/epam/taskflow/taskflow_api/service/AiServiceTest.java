@@ -1,14 +1,14 @@
 package com.epam.taskflow.taskflow_api.service;
 
-import com.anthropic.client.AnthropicClient;
 import com.epam.taskflow.taskflow_api.dto.AiQueryRequestDTO;
 import com.epam.taskflow.taskflow_api.dto.AiQueryResponseDTO;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.client.RestClient;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -23,13 +23,17 @@ import static org.mockito.Mockito.verify;
 class AiServiceTest {
 
     @Mock
-    private AnthropicClient anthropicClient;
+    private RestClient dialRestClient;
 
-    @InjectMocks
     private AiService aiService;
 
+    @BeforeEach
+    void setUp() {
+        aiService = new AiService(dialRestClient, "gpt-5-mini-2025-08-07", "2025-04-01-preview");
+    }
+
     @Test
-    @DisplayName("askQuestion should return DTO with model name")
+    @DisplayName("askQuestion should return DTO with DIAL model name")
     void askQuestion_shouldReturnDTO_withModelName() {
         AiService spy = spy(aiService);
         doReturn("TaskFlow is a task management REST API.").when(spy).queryModel(anyString(), anyString());
@@ -38,7 +42,7 @@ class AiServiceTest {
 
         assertNotNull(result);
         assertEquals("TaskFlow is a task management REST API.", result.getAnswer());
-        assertEquals("claude-opus-4-8", result.getModel());
+        assertEquals("gpt-5-mini-2025-08-07", result.getModel());
     }
 
     @Test
@@ -64,8 +68,8 @@ class AiServiceTest {
     }
 
     @Test
-    @DisplayName("askQuestion should include contextFilesUsed in response equal to loaded files")
-    void askQuestion_shouldIncludeContextFilesUsedInResponse() {
+    @DisplayName("askQuestion should include all response fields")
+    void askQuestion_shouldIncludeAllResponseFields() {
         AiService spy = spy(aiService);
         doReturn("The source has multiple layers.").when(spy).queryModel(anyString(), anyString());
 
@@ -85,6 +89,6 @@ class AiServiceTest {
         AiQueryResponseDTO result = spy.askQuestion(new AiQueryRequestDTO("What?"));
 
         assertEquals("", result.getAnswer());
-        assertEquals("claude-opus-4-8", result.getModel());
+        assertEquals("gpt-5-mini-2025-08-07", result.getModel());
     }
 }
