@@ -22,11 +22,13 @@ A production-grade Spring Boot 3.x REST API for task management, built as an **A
 TaskFlow is a RESTful task-management API with:
 
 - Full CRUD for tasks (create, read, update, delete)
+- Task notes sub-resource (CRUD notes per task)
 - Field validation (status, priority, due-date, size limits)
 - Pagination and filtering by status, priority, and keyword
 - Structured error responses (RFC-style `ErrorResponse`)
 - OpenAPI / Swagger UI documentation
 - Due-date tracking with future-date enforcement
+- RAG-powered AI endpoint (`POST /api/ai/ask`) that answers questions about the codebase using the EPAM DIAL AI Proxy
 
 ---
 
@@ -40,6 +42,7 @@ TaskFlow is a RESTful task-management API with:
 | Boilerplate | Lombok (`@Data`, `@Builder`, `@Slf4j`, `@RequiredArgsConstructor`) |
 | API Docs | SpringDoc OpenAPI 3 / Swagger UI |
 | Testing | JUnit 5, Mockito, Spring Boot Test (`@WebMvcTest`, `@MockBean`) |
+| AI Proxy | EPAM DIAL AI Proxy (OpenAI-compatible) — `gpt-5-mini-2025-08-07` |
 | Build | Maven |
 
 ---
@@ -119,10 +122,17 @@ TaskFlow is a RESTful task-management API with:
 ```
 com.epam.taskflow.taskflow_api
 ├── config/
+│   ├── AiConfig.java               # RestClient bean for EPAM DIAL AI Proxy
 │   └── OpenApiConfig.java          # Swagger / OpenAPI 3 setup
 ├── controller/
+│   ├── AiController.java           # POST /api/ai/ask — RAG Q&A endpoint
+│   ├── NoteController.java         # REST endpoints (/api/tasks/{id}/notes/**)
 │   └── TaskController.java         # REST endpoints (/api/tasks/**)
 ├── dto/
+│   ├── AiQueryRequestDTO.java      # Validated AI question payload
+│   ├── AiQueryResponseDTO.java     # AI answer + model + context file count
+│   ├── NoteRequestDTO.java         # Validated note inbound payload
+│   ├── NoteResponseDTO.java        # Outbound note shape
 │   ├── PagedResponseDTO.java       # Pagination wrapper
 │   ├── TaskRequestDTO.java         # Validated inbound payload
 │   └── TaskResponseDTO.java        # Outbound shape (never exposes entity)
@@ -130,13 +140,18 @@ com.epam.taskflow.taskflow_api
 │   ├── GlobalExceptionHandler.java # @RestControllerAdvice — all errors here
 │   └── ResourceNotFoundException.java
 ├── mapper/
-│   └── TaskMapper.java             # Entity ↔ DTO conversion
+│   ├── NoteMapper.java             # Note entity ↔ DTO conversion
+│   └── TaskMapper.java             # Task entity ↔ DTO conversion
 ├── model/
+│   ├── Note.java                   # JPA entity (belongs to Task, cascade delete)
 │   └── Task.java                   # JPA entity
 ├── repository/
+│   ├── NoteRepository.java         # Spring Data JPA for notes
 │   └── TaskRepository.java         # Spring Data JPA + custom query methods
 └── service/
-    └── TaskService.java            # Business logic, @Transactional writes
+    ├── AiService.java              # RAG: loads source files, calls DIAL proxy
+    ├── NoteService.java            # Note business logic, @Transactional writes
+    └── TaskService.java            # Task business logic, @Transactional writes
 ```
 
 **Design principles enforced via `.github/copilot-instructions.md`:**
@@ -154,6 +169,8 @@ com.epam.taskflow.taskflow_api
 Base URL: `http://localhost:8080`  
 Swagger UI: `http://localhost:8080/swagger-ui.html`
 
+**Tasks**
+
 | Method | Path | Description |
 |---|---|---|
 | `GET` | `/api/tasks` | List all tasks |
@@ -165,6 +182,36 @@ Swagger UI: `http://localhost:8080/swagger-ui.html`
 | `GET` | `/api/tasks/status/{status}` | Filter by status |
 | `GET` | `/api/tasks/priority/{priority}` | Filter by priority |
 | `GET` | `/api/tasks/search?keyword=` | Search by title |
+
+**Notes** (sub-resource of Task)
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/api/tasks/{taskId}/notes` | List all notes for a task |
+| `POST` | `/api/tasks/{taskId}/notes` | Add a note to a task |
+| `GET` | `/api/tasks/{taskId}/notes/{noteId}` | Get a specific note |
+| `PUT` | `/api/tasks/{taskId}/notes/{noteId}` | Update a note |
+| `DELETE` | `/api/tasks/{taskId}/notes/{noteId}` | Delete a note (204) |
+
+**AI**
+
+| Method | Path | Description |
+|---|---|---|
+| `POST` | `/api/ai/ask` | Ask a question about the codebase (RAG) |
+
+### AI request/response
+
+```json
+// Request
+{ "question": "What does the TaskController do?" }
+
+// Response
+{
+  "answer": "...",
+  "model": "gpt-5-mini-2025-08-07",
+  "contextFilesUsed": 20
+}
+```
 
 ### Task payload
 
@@ -228,8 +275,8 @@ mvn test
 | 2 | Pagination, filtering, Swagger | Claude Code | Paginated endpoints, OpenAPI docs |
 | 3 | Input validation + unit tests | Claude Code + Copilot | `@Valid` DTOs, `GlobalExceptionHandler`, 26+ tests |
 | 4 | GitHub MCP issue-driven feature | Claude Code + **GitHub MCP** | `dueDate` field implemented from issue #3 without re-typing requirements |
-| 5 | *(upcoming)* | | |
-| 6 | RAG over codebase | | Semantic search on this README + codebase |
+| 5 | Notes sub-resource | Claude Code + specialist agents | Full Notes CRUD (`/api/tasks/{id}/notes/**`) with validation and tests |
+| 6 | RAG over codebase | Claude Code + **EPAM DIAL AI Proxy** | `POST /api/ai/ask` — answers questions about the codebase using `gpt-5-mini-2025-08-07` |
 | 7 | End-to-end showcase | | Full demo pipeline |
 
 ---
