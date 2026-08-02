@@ -1,0 +1,141 @@
+============================================================
+  SupportIQ DEMO — SAMPLE CUSTOMER EMAILS
+  Copy any email below and paste into the "Paste Any Customer Email" box
+  Expected AI results shown for each — use these to narrate the demo
+============================================================
+
+
+──────────────────────────────────────────────────────────────
+EMAIL 1 — ANGRY ENTERPRISE BILLING  ★ HERO DEMO EMAIL
+(Already loaded via "Load: Angry Billing" button in UI)
+
+Expected AI output:
+  Category         : BILLING
+  Sentiment Score  : 1/10  →  VERY_ANGRY
+  Risk Score       : 9-10/10
+  Escalation       : YES  (50-seat enterprise + legal threat + same-day ultimatum)
+  Priority         : CRITICAL
+  Key Issues       : Double charge $2,400 · Bank dispute threat · 50 enterprise seats at risk
+  Recommended Action: Immediate manager callback + full refund same day
+──────────────────────────────────────────────────────────────
+
+I am absolutely furious. Your system charged my corporate credit card TWICE for the annual plan — $2,400 was debited this morning on top of the charge last week. This is completely unacceptable and I am ready to dispute this with my bank and report this to the consumer protection agency. If this is not resolved TODAY I will be cancelling all 50 seats of our enterprise subscription and moving to a competitor.
+
+
+──────────────────────────────────────────────────────────────
+EMAIL 2 — SECURITY BREACH / DATA EXPOSURE
+(Already loaded via "Load: Security Breach" button in UI)
+
+Expected AI output:
+  Category         : ACCOUNT / TECHNICAL
+  Sentiment Score  : 2-3/10  →  VERY_ANGRY / ANGRY
+  Risk Score       : 9-10/10
+  Escalation       : YES  (GDPR clock, unauthorized data export, legal team involved)
+  Priority         : CRITICAL
+  Key Issues       : Unauthorized 3AM access · API data export · GDPR 24h deadline · Legal team notified
+  Recommended Action: Immediate security team response + incident report within 24h
+──────────────────────────────────────────────────────────────
+
+My account was accessed from an IP address in Eastern Europe at 3 AM yesterday. I have 2-factor auth enabled but someone still got in. There are 3 unauthorized API calls in my logs exporting customer data. This is a potential GDPR breach. I have already notified my legal team and they are asking for an incident report within 24 hours.
+
+
+──────────────────────────────────────────────────────────────
+EMAIL 3 — HAPPY CUSTOMER / PRAISE
+(Already loaded via "Load: Happy Customer" button in UI)
+
+Expected AI output:
+  Category         : GENERAL
+  Sentiment Score  : 9-10/10  →  VERY_SATISFIED
+  Risk Score       : 1/10
+  Escalation       : NO
+  Priority         : LOW
+  Key Issues       : Onboarding praise · Productivity improvement · Referral intent
+  Recommended Action: Thank customer, log as positive NPS signal, notify CS team
+──────────────────────────────────────────────────────────────
+
+I just wanted to take a moment to say how impressed I am with your onboarding team. Emma from customer success spent 2 hours with me setting up integrations and was incredibly knowledgeable and patient. The platform itself is also fantastic — our team productivity has increased noticeably in just the first week. Will definitely be recommending your platform to others.
+
+
+──────────────────────────────────────────────────────────────
+EMAIL 4 — PRODUCTION OUTAGE / PLATFORM DOWN
+(New — use this to demo TECHNICAL category + business urgency)
+
+Expected AI output:
+  Category         : TECHNICAL
+  Sentiment Score  : 2-3/10  →  VERY_ANGRY / ANGRY
+  Risk Score       : 8-9/10
+  Escalation       : YES  (revenue loss, SLA breach, public event at stake)
+  Priority         : CRITICAL
+  Key Issues       : API completely down · Client event in 4 hours · SLA violation · Revenue at risk
+  Recommended Action: Escalate to engineering on-call immediately, customer needs ETA within 30 min
+──────────────────────────────────────────────────────────────
+
+Our entire integration with your API has been down for the past 3 hours. Every API call is returning a 503 error. This is not acceptable — we have a live client presentation in 4 hours that depends entirely on data flowing through your platform. Our development team has been on a call since 6 AM trying to diagnose this and it is clearly on your end. We are losing actual revenue right now. If this is not resolved within the next hour we will be looking at SLA breach penalties and I will be escalating this to our executive team. I need a status update and an ETA immediately.
+
+
+──────────────────────────────────────────────────────────────
+EMAIL 5 — FRUSTRATED REFUND REQUEST
+(New — use this to demo REFUND category + moderate sentiment)
+
+Expected AI output:
+  Category         : REFUND
+  Sentiment Score  : 3-4/10  →  ANGRY
+  Risk Score       : 4-5/10
+  Escalation       : NO  (frustrated but not threatening churn)
+  Priority         : MEDIUM / HIGH
+  Key Issues       : Charged after cancellation · 3 weeks no response · Policy dispute
+  Recommended Action: Verify cancellation date in system, process refund if valid, respond within 24h
+──────────────────────────────────────────────────────────────
+
+I cancelled my subscription on the 14th of last month and your system still charged me the full monthly fee on the 1st. I have sent two emails and raised a ticket three weeks ago and have not received a single response. I understand mistakes happen but the silence from your team is making this much worse. I need a refund for the $149 charge. If this is genuinely being looked at, a simple acknowledgement would go a long way. I am not trying to be difficult but I am starting to feel like your company simply does not care about existing customers once they decide to leave.
+
+
+──────────────────────────────────────────────────────────────
+EMAIL 6 — ACCOUNT LOCKED / DEADLINE PRESSURE
+(New — use this to demo ACCOUNT category + moderate risk)
+
+Expected AI output:
+  Category         : ACCOUNT
+  Sentiment Score  : 4-5/10  →  ANGRY / NEUTRAL
+  Risk Score       : 5-6/10
+  Escalation       : NO  (urgent but not churn-risk level)
+  Priority         : HIGH
+  Key Issues       : Locked out · Team of 8 blocked · Deadline in 2 hours · Admin reset not working
+  Recommended Action: Priority account unlock, check SSO config, respond within 30 minutes
+──────────────────────────────────────────────────────────────
+
+I have been locked out of my account since yesterday evening and the self-service password reset is not sending the email. I have tried four times. My entire team of 8 people is blocked because I am the account owner and they cannot access the shared workspace. We have a deliverable due to a client in just over 2 hours. I have tried your support chat but it is showing as offline. I understand you may have many requests but this is genuinely time-sensitive and I would really appreciate urgent help. Account email is j.hartmann@nexus-consulting.eu.
+
+
+──────────────────────────────────────────────────────────────
+EMAIL 7 — CONTRACT CANCELLATION / EXECUTIVE ESCALATION
+(New — use this to demo high-risk COMPLAINT with no billing angle)
+
+Expected AI output:
+  Category         : COMPLAINT
+  Sentiment Score  : 2/10  →  VERY_ANGRY
+  Risk Score       : 9/10
+  Escalation       : YES  (C-level involved, 120-seat account, vendor evaluation underway)
+  Priority         : CRITICAL
+  Key Issues       : C-level escalation · 120 seats at risk · 6 months of unresolved issues · Competitor evaluation started
+  Recommended Action: VP-level callback within 2 hours, account review meeting, retention offer
+──────────────────────────────────────────────────────────────
+
+I am the Chief Operating Officer at Meridian Group. I am writing to you directly because our account manager has failed to resolve a series of issues we have raised over the past 6 months. Our team of 120 users has experienced repeated data sync failures, two billing discrepancies that took months to correct, and three instances where critical features were removed without notice. I have instructed our IT director to begin evaluating alternative platforms. Before we make a final decision I want to give your leadership team one opportunity to respond. I expect a call from a VP or above by end of business today. If I do not hear back, we will proceed with the migration.
+
+
+──────────────────────────────────────────────────────────────
+  QUICK REFERENCE — WHAT EACH EMAIL DEMONSTRATES
+──────────────────────────────────────────────────────────────
+
+  Email 1  Angry Billing     →  Sentiment 1 · Risk 10 · CRITICAL · ESCALATION (classic hero)
+  Email 2  Security Breach   →  Sentiment 2 · Risk 10 · CRITICAL · ESCALATION (GDPR angle)
+  Email 3  Happy Customer    →  Sentiment 9 · Risk 1  · LOW      · No escalation (contrast)
+  Email 4  Platform Outage   →  Sentiment 2 · Risk 9  · CRITICAL · ESCALATION (revenue loss)
+  Email 5  Refund Request    →  Sentiment 4 · Risk 5  · MEDIUM   · No escalation (moderate)
+  Email 6  Account Locked    →  Sentiment 5 · Risk 6  · HIGH     · No escalation (deadline)
+  Email 7  C-Level Threat    →  Sentiment 2 · Risk 9  · CRITICAL · ESCALATION (executive)
+
+  DEMO TIP: Start with Email 1 (hero). Then show Email 3 to prove the AI understands
+  the difference. Then ask the audience which they want to see next.
+============================================================
