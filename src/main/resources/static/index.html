@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SupportIQ — AI Customer Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0d0f1c;--bg-sidebar:#111325;--bg-card:#181b2e;--bg-card-hover:#1d2035;
+  --border:#252840;--text:#e2e8f0;--text-muted:#64748b;--text-dim:#94a3b8;
+  --cyan:#06b6d4;--purple:#8b5cf6;--green:#10b981;--amber:#f59e0b;
+  --red:#ef4444;--red-dark:#dc2626;--orange:#f97316;
+}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);height:100vh;overflow:hidden;display:flex}
+
+/* ─── SIDEBAR ─── */
+#sidebar{width:228px;min-width:228px;background:var(--bg-sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;height:100vh}
+.sidebar-logo{padding:18px 18px 14px;border-bottom:1px solid var(--border)}
+.logo-text{font-size:17px;font-weight:800;background:linear-gradient(135deg,var(--cyan),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-.5px}
+.logo-sub{font-size:10px;color:var(--text-muted);margin-top:2px;letter-spacing:.6px;text-transform:uppercase}
+.sidebar-nav{padding:10px 6px;flex:1}
+.nav-section{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);padding:8px 12px 3px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 11px;border-radius:7px;cursor:pointer;font-size:13px;font-weight:500;color:var(--text-dim);transition:all .15s;margin-bottom:1px;position:relative;user-select:none}
+.nav-item:hover{background:rgba(255,255,255,.05);color:var(--text)}
+.nav-item.active{background:rgba(6,182,212,.1);color:var(--cyan)}
+.nav-item.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:55%;background:var(--cyan);border-radius:0 2px 2px 0}
+.nav-badge{margin-left:auto;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;min-width:18px;text-align:center;line-height:16px}
+.nav-badge.warn{background:var(--amber);color:#000}
+.sidebar-footer{padding:10px 14px;border-top:1px solid var(--border)}
+.api-status{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--text-muted)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+.dot.off{background:var(--red);animation:none}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ─── MAIN ─── */
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+#topbar{height:54px;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 22px;gap:14px}
+.topbar-title{font-size:15px;font-weight:600}
+.topbar-right{margin-left:auto;display:flex;gap:8px;align-items:center}
+#content{flex:1;overflow-y:auto;padding:22px}
+
+/* ─── PAGES ─── */
+.page{display:none}.page.active{display:block}
+
+/* ─── CARDS ─── */
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:18px}
+.card-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-bottom:12px}
+
+/* ─── GRID ─── */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.g12{display:grid;grid-template-columns:1fr 2fr;gap:18px}
+
+/* ─── STAT CARDS ─── */
+.stat{background:var(--bg-card);border:1px solid var(--border);border-radius:11px;padding:16px 18px}
+.stat-label{font-size:11px;color:var(--text-muted);font-weight:500;text-transform:uppercase;letter-spacing:.5px}
+.stat-value{font-size:27px;font-weight:700;margin:5px 0 3px;line-height:1}
+.stat-sub{font-size:11px;color:var(--text-muted)}
+
+/* ─── HEALTH RING ─── */
+.health-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px;display:flex;align-items:center;gap:20px}
+.ring-wrap{position:relative;width:96px;height:96px;flex-shrink:0}
+.ring-wrap svg{transform:rotate(-90deg)}
+.ring-text{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
+.ring-num{font-size:22px;font-weight:800;line-height:1}
+.ring-label{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px}
+.qs-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px}
+.qs-badge.HEALTHY{background:rgba(16,185,129,.15);color:var(--green)}
+.qs-badge.AT_RISK{background:rgba(245,158,11,.15);color:var(--amber)}
+.qs-badge.CRITICAL{background:rgba(239,68,68,.15);color:var(--red)}
+
+/* ─── BADGES ─── */
+.badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:4px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.3px}
+.badge-OPEN{background:rgba(100,116,139,.2);color:#94a3b8}
+.badge-IN_PROGRESS{background:rgba(139,92,246,.2);color:#a78bfa}
+.badge-ESCALATED{background:rgba(239,68,68,.2);color:#f87171}
+.badge-RESOLVED{background:rgba(16,185,129,.2);color:#34d399}
+.badge-CLOSED{background:rgba(71,85,105,.2);color:#64748b}
+.badge-CRITICAL{background:rgba(220,38,38,.2);color:#f87171}
+.badge-HIGH{background:rgba(249,115,22,.2);color:#fb923c}
+.badge-MEDIUM{background:rgba(245,158,11,.2);color:#fbbf24}
+.badge-LOW{background:rgba(16,185,129,.2);color:#34d399}
+.cat-chip{display:inline-flex;padding:2px 7px;border-radius:4px;font-size:11px;font-weight:600;background:rgba(139,92,246,.15);color:#c4b5fd}
+.esc-chip{font-size:11px;font-weight:700;color:var(--red);background:rgba(239,68,68,.15);padding:2px 8px;border-radius:4px}
+
+/* ─── TABLE ─── */
+.tbl-wrap{border:1px solid var(--border);border-radius:11px;overflow:hidden}
+table{width:100%;border-collapse:collapse}
+thead th{background:rgba(255,255,255,.03);padding:9px 13px;text-align:left;font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border)}
+tbody tr{border-bottom:1px solid rgba(255,255,255,.04);transition:background .1s;cursor:pointer}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:rgba(255,255,255,.03)}
+tbody td{padding:10px 13px;font-size:13px;vertical-align:middle}
+tr.esc-row{background:rgba(239,68,68,.04)}
+tr.crit-row{background:rgba(220,38,38,.04)}
+.tkt-num{font-family:'Courier New',monospace;font-size:12px;color:var(--cyan);font-weight:600}
+
+/* ─── BUTTONS ─── */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:7px;font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all .15s;font-family:'Inter',sans-serif;white-space:nowrap}
+.btn-p{background:var(--cyan);color:#000;font-weight:600}
+.btn-p:hover{background:#22d3ee}
+.btn-g{background:rgba(255,255,255,.06);color:var(--text-dim);border:1px solid var(--border)}
+.btn-g:hover{background:rgba(255,255,255,.1);color:var(--text)}
+.btn-r{background:rgba(239,68,68,.15);color:var(--red);border:1px solid rgba(239,68,68,.3)}
+.btn-r:hover{background:rgba(239,68,68,.25)}
+.btn-v{background:rgba(139,92,246,.15);color:#a78bfa;border:1px solid rgba(139,92,246,.3)}
+.btn-v:hover{background:rgba(139,92,246,.25)}
+.btn-sm{padding:4px 10px;font-size:11px;border-radius:5px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+
+/* ─── INPUTS ─── */
+input,textarea,select{background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;padding:8px 11px;outline:none;transition:border-color .15s;width:100%}
+input:focus,textarea:focus,select:focus{border-color:var(--cyan)}
+textarea{resize:vertical}
+select option{background:#1a1d2e}
+.fl{display:flex;gap:5px}.fg{margin-bottom:13px}.fl-label{font-size:12px;color:var(--text-dim);font-weight:500;margin-bottom:4px;display:block}
+
+/* ─── ALERTS ─── */
+.alert{display:flex;align-items:flex-start;gap:9px;padding:11px 14px;border-radius:8px;font-size:13px;margin-bottom:14px;line-height:1.5}
+.alert-r{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5}
+.alert-a{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);color:#fcd34d}
+.alert-c{background:rgba(6,182,212,.1);border:1px solid rgba(6,182,212,.3);color:#67e8f9}
+
+/* ─── LOADING ─── */
+.loading{display:flex;align-items:center;justify-content:center;padding:40px;color:var(--text-muted);font-size:13px;gap:9px}
+.spin{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--cyan);border-radius:50%;animation:spin .75s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ─── MODAL ─── */
+#overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:100;display:none;align-items:center;justify-content:center;padding:20px}
+#overlay.open{display:flex}
+.modal{background:#181b2e;border:1px solid var(--border);border-radius:14px;width:100%;max-width:660px;max-height:87vh;overflow-y:auto}
+.modal-hd{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#181b2e;z-index:1}
+.modal-hd h3{font-size:14px;font-weight:600}
+.modal-x{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;padding:2px 5px;border-radius:4px;font-family:inherit}
+.modal-x:hover{background:rgba(255,255,255,.1);color:var(--text)}
+.modal-bd{padding:20px}
+
+/* ─── TOAST ─── */
+#toast{position:fixed;bottom:22px;right:22px;z-index:200;display:flex;flex-direction:column;gap:7px;max-width:300px}
+.t-item{background:#252837;border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:13px;animation:si .2s ease;display:flex;align-items:center;gap:7px}
+.t-item.ok{border-left:3px solid var(--green)}
+.t-item.err{border-left:3px solid var(--red)}
+.t-item.inf{border-left:3px solid var(--cyan)}
+@keyframes si{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* ─── MISC ─── */
+.filter-row{display:flex;gap:3px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;padding:3px;margin-bottom:14px}
+.ftab{padding:4px 11px;border-radius:5px;font-size:12px;font-weight:500;cursor:pointer;color:var(--text-muted);border:none;background:none;transition:all .15s;font-family:'Inter',sans-serif}
+.ftab:hover{color:var(--text);background:rgba(255,255,255,.05)}
+.ftab.on{background:var(--bg-card);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.divider{height:1px;background:var(--border);margin:14px 0}
+.empty{text-align:center;padding:44px 20px;color:var(--text-muted)}
+.empty-icon{font-size:38px;margin-bottom:10px}
+.empty-title{font-size:14px;font-weight:600;color:var(--text-dim);margin-bottom:5px}
+.empty-sub{font-size:13px}
+.score-bar{height:4px;background:var(--border);border-radius:2px;margin-top:5px}
+.score-fill{height:100%;border-radius:2px;transition:width .5s ease}
+.sent-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:5px}
+.rec-item{display:flex;gap:9px;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px;line-height:1.5}
+.rec-item:last-child{border-bottom:none}
+.rec-n{width:20px;height:20px;border-radius:50%;background:rgba(6,182,212,.15);color:var(--cyan);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.metric-2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.metric-box{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:8px;padding:11px}
+.metric-box .ml{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+.metric-box .mv{font-size:14px;font-weight:600}
+.key-tag{display:inline-block;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);color:#fca5a5;padding:2px 7px;border-radius:4px;font-size:11px;margin:2px}
+.urg-tag{display:inline-block;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.2);color:#fcd34d;padding:2px 7px;border-radius:4px;font-size:11px;margin:2px}
+.reply-box{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:9px}
+.reply-box .rl{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.reply-txt{font-size:13px;line-height:1.65;white-space:pre-wrap}
+.triage-card{display:flex;gap:12px;padding:12px;border:1px solid var(--border);border-radius:9px;margin-bottom:7px;background:var(--bg-card);transition:background .15s;cursor:pointer}
+.triage-card:hover{background:var(--bg-card-hover)}
+.rank-box{width:34px;height:34px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0}
+.r1{background:rgba(220,38,38,.2);color:#f87171}.r2{background:rgba(249,115,22,.2);color:#fb923c}
+.r3{background:rgba(245,158,11,.2);color:#fbbf24}.ro{background:rgba(100,116,139,.2);color:#94a3b8}
+.chk-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;max-height:240px;overflow-y:auto;padding-right:3px;margin-bottom:12px}
+.chk-item{display:flex;align-items:center;gap:7px;padding:7px 9px;border:1px solid var(--border);border-radius:6px;cursor:pointer;transition:background .1s;font-size:12px}
+.chk-item:hover{background:rgba(255,255,255,.04)}
+.chk-item.on{background:rgba(6,182,212,.08);border-color:rgba(6,182,212,.3)}
+.chk-item input{width:auto;accent-color:var(--cyan)}
+::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#252840;border-radius:10px}
+.mb-4{margin-bottom:16px}.mb-6{margin-bottom:22px}.mt-4{margin-top:14px}
+.flex{display:flex}.items-center{align-items:center}.gap-2{gap:8px}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-text">SupportIQ</div>
+    <div class="logo-sub">AI Intelligence Platform</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Overview</div>
+    <div class="nav-item active" onclick="go('dashboard')"><span>📊</span> Dashboard</div>
+    <div class="nav-section" style="margin-top:8px">Queue</div>
+    <div class="nav-item" onclick="go('tickets')"><span>🎫</span> All Tickets <span class="nav-badge warn" id="b-open">—</span></div>
+    <div class="nav-item" onclick="go('escalation')"><span>🚨</span> Escalation Queue <span class="nav-badge" id="b-esc">—</span></div>
+    <div class="nav-section" style="margin-top:8px">AI Tools</div>
+    <div class="nav-item" onclick="go('analyze')"><span>🔍</span> Analyze Email</div>
+    <div class="nav-item" onclick="go('triage')"><span>⚡</span> Bulk Triage</div>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="api-status"><div class="dot" id="api-dot"></div><span id="api-txt">Connecting…</span></div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div id="main">
+  <div id="topbar">
+    <span class="topbar-title" id="pg-title">Dashboard</span>
+    <div class="topbar-right">
+      <button class="btn btn-g btn-sm" onclick="reload()">↻ Refresh</button>
+      <button class="btn btn-p btn-sm" onclick="openCreate()">+ New Ticket</button>
+    </div>
+  </div>
+  <div id="content">
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div id="db-content"><div class="loading"><div class="spin"></div>Asking AI to assess queue health…</div></div>
+    </div>
+
+    <!-- TICKETS -->
+    <div class="page" id="page-tickets">
+      <div class="filter-row" id="tkt-filters">
+        <button class="ftab on" onclick="filterTix(null,this)">All</button>
+        <button class="ftab" onclick="filterTix('OPEN',this)">Open</button>
+        <button class="ftab" onclick="filterTix('IN_PROGRESS',this)">In Progress</button>
+        <button class="ftab" onclick="filterTix('ESCALATED',this)">Escalated</button>
+        <button class="ftab" onclick="filterTix('RESOLVED',this)">Resolved</button>
+        <button class="ftab" onclick="filterTix('CLOSED',this)">Closed</button>
+      </div>
+      <div id="tix-content"><div class="loading"><div class="spin"></div>Loading…</div></div>
+    </div>
+
+    <!-- ANALYZE -->
+    <div class="page" id="page-analyze">
+      <div class="g2" style="gap:20px;align-items:start">
+        <div>
+          <div class="card mb-4">
+            <div class="card-title">Paste Any Customer Email</div>
+            <div class="fg"><textarea id="ai-input" rows="8" style="font-size:13px;line-height:1.6" placeholder="Paste raw customer email text here — no ticket needed. AI will classify, score sentiment, calculate risk, and recommend next actions in under 2 seconds."></textarea></div>
+            <div class="fl" style="gap:8px;flex-wrap:wrap">
+              <button class="btn btn-p" onclick="doAnalyze()">⚡ Analyze with AI</button>
+              <button class="btn btn-g btn-sm" onclick="loadSample('angry')">Load: Angry Billing</button>
+              <button class="btn btn-g btn-sm" onclick="loadSample('security')">Load: Security Breach</button>
+              <button class="btn btn-g btn-sm" onclick="loadSample('happy')">Load: Happy Customer</button>
+            </div>
+          </div>
+        </div>
+        <div id="ai-results">
+          <div class="empty"><div class="empty-icon">🔍</div><div class="empty-title">Paste an email and click Analyze</div><div class="empty-sub">AI returns sentiment, risk, category, and recommended action</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TRIAGE -->
+    <div class="page" id="page-triage">
+      <div class="g2" style="gap:20px;align-items:start">
+        <div class="card">
+          <div class="card-title">Select Tickets to Triage</div>
+          <div id="triage-list"><div class="loading"><div class="spin"></div>Loading…</div></div>
+          <div class="divider"></div>
+          <div class="flex items-center gap-2">
+            <span style="font-size:13px;color:var(--text-muted)" id="sel-count">0 selected</span>
+            <button class="btn btn-p" style="margin-left:auto" onclick="doTriage()" id="triage-btn" disabled>⚡ Run Bulk Triage</button>
+          </div>
+        </div>
+        <div id="triage-results">
+          <div class="empty"><div class="empty-icon">⚡</div><div class="empty-title">Select 2–50 tickets and triage</div><div class="empty-sub">AI ranks them by urgency with specific reasoning</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ESCALATION -->
+    <div class="page" id="page-escalation">
+      <div id="esc-content"><div class="loading"><div class="spin"></div>Loading escalation queue…</div></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL -->
+<div id="overlay" onclick="closeModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-hd"><h3 id="m-title">Detail</h3><button class="modal-x" onclick="closeModal()">✕</button></div>
+    <div class="modal-bd" id="m-body"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// ─────────────────────────────────────────────────
+// CONFIG & STATE
+// ─────────────────────────────────────────────────
+const BASE = '/api/support'
+let curPage = 'dashboard'
+let curFilter = null
+let selTriage = new Set()
+
+const TITLES = {dashboard:'Dashboard',tickets:'All Tickets',analyze:'Analyze Raw Email',triage:'Bulk Triage',escalation:'Escalation Queue'}
+
+// ─────────────────────────────────────────────────
+// ROUTER
+// ─────────────────────────────────────────────────
+function go(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'))
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'))
+  document.getElementById('page-' + page).classList.add('active')
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if ((n.getAttribute('onclick')||'').includes("'"+page+"'")) n.classList.add('active')
+  })
+  document.getElementById('pg-title').textContent = TITLES[page]
+  curPage = page
+  if (page==='dashboard') loadDashboard()
+  else if (page==='tickets') loadTickets(curFilter)
+  else if (page==='escalation') loadEscalation()
+  else if (page==='triage') loadTriageList()
+}
+
+function reload() { go(curPage) }
+
+// ─────────────────────────────────────────────────
+// HTTP
+// ─────────────────────────────────────────────────
+async function call(method, path, body) {
+  const o = {method, headers:{'Content-Type':'application/json'}}
+  if (body) o.body = JSON.stringify(body)
+  const res = await fetch(BASE + path, o)
+  if (!res.ok) {
+    const e = await res.json().catch(()=>({message:'Request failed ('+res.status+')'}))
+    throw new Error(e.message || 'Request failed')
+  }
+  if (res.status === 204) return null
+  return res.json()
+}
+
+// ─────────────────────────────────────────────────
+// TOAST
+// ─────────────────────────────────────────────────
+function toast(msg, type='inf') {
+  const icons = {ok:'✅',err:'❌',inf:'ℹ️'}
+  const el = document.createElement('div')
+  el.className = 't-item '+type
+  el.innerHTML = `<span>${icons[type]||'ℹ️'}</span>${msg}`
+  document.getElementById('toast').appendChild(el)
+  setTimeout(()=>el.remove(), 3500)
+}
+
+// ─────────────────────────────────────────────────
+// MODAL
+// ─────────────────────────────────────────────────
+function openModal(title, html) {
+  document.getElementById('m-title').textContent = title
+  document.getElementById('m-body').innerHTML = html
+  document.getElementById('overlay').classList.add('open')
+}
+function closeModal(e) {
+  if (!e || e.target===document.getElementById('overlay'))
+    document.getElementById('overlay').classList.remove('open')
+}
+
+// ─────────────────────────────────────────────────
+// COLOR HELPERS
+// ─────────────────────────────────────────────────
+function scol(s) {
+  if (!s) return '#64748b'
+  if (s<=2) return '#ef4444'
+  if (s<=4) return '#f97316'
+  if (s<=6) return '#94a3b8'
+  if (s<=8) return '#10b981'
+  return '#06b6d4'
+}
+function rcol(r) {
+  if (!r) return '#64748b'
+  if (r>=8) return '#ef4444'
+  if (r>=6) return '#f97316'
+  if (r>=4) return '#f59e0b'
+  return '#10b981'
+}
+function hcol(s) { return s>=75?'#10b981':s>=50?'#f59e0b':'#ef4444' }
+function bar(v,m,c) {
+  return `<div class="score-bar"><div class="score-fill" style="width:${Math.round(v/m*100)}%;background:${c}"></div></div>`
+}
+function badge(v) { return `<span class="badge badge-${v}">${v.replace('_',' ')}</span>` }
+function tnum(n) { return `<span class="tkt-num">${n}</span>` }
+
+// ─────────────────────────────────────────────────
+// DASHBOARD
+// ─────────────────────────────────────────────────
+async function loadDashboard() {
+  document.getElementById('db-content').innerHTML = '<div class="loading"><div class="spin"></div>Asking AI to assess queue health…</div>'
+  try {
+    const d = await call('GET','/dashboard')
+    const sc = d.queueHealthScore, col = hcol(sc)
+    const R=40, C=2*Math.PI*R, fill=C*(sc/100)
+    document.getElementById('b-open').textContent = d.openCount
+    document.getElementById('b-esc').textContent = d.escalatedCount
+
+    const alert = d.escalationAlert
+      ? `<div class="alert alert-r mb-4">🚨 <strong>Escalation Alert:</strong> ${d.escalationAlert}</div>` : ''
+
+    const recs = (d.aiRecommendations||[]).map((r,i)=>
+      `<div class="rec-item"><div class="rec-n">${i+1}</div><div>${r}</div></div>`).join('')
+
+    const cats = Object.entries(d.categoryBreakdown||{}).map(([k,v])=>
+      `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border)">
+        <span class="cat-chip">${k}</span><strong>${v}</strong></div>`).join('')
+
+    document.getElementById('db-content').innerHTML = `
+      ${alert}
+      <div class="g4 mb-6">
+        <div class="stat"><div class="stat-label">Total</div><div class="stat-value" style="color:var(--cyan)">${d.totalTickets}</div><div class="stat-sub">All tickets</div></div>
+        <div class="stat"><div class="stat-label">Open</div><div class="stat-value" style="color:#94a3b8">${d.openCount}</div><div class="stat-sub">Awaiting agent</div></div>
+        <div class="stat"><div class="stat-label">Escalated</div><div class="stat-value" style="color:var(--red)">${d.escalatedCount}</div><div class="stat-sub">Manager attention</div></div>
+        <div class="stat"><div class="stat-label">Critical</div><div class="stat-value" style="color:#dc2626">${d.criticalCount}</div><div class="stat-sub">Highest priority</div></div>
+      </div>
+      <div class="g2 mb-6">
+        <div class="health-card">
+          <div class="ring-wrap">
+            <svg width="96" height="96" viewBox="0 0 96 96">
+              <circle cx="48" cy="48" r="${R}" fill="none" stroke="var(--border)" stroke-width="8"/>
+              <circle cx="48" cy="48" r="${R}" fill="none" stroke="${col}" stroke-width="8"
+                stroke-dasharray="${fill} ${C-fill}" stroke-linecap="round"/>
+            </svg>
+            <div class="ring-text"><div class="ring-num" style="color:${col}">${sc}</div><div class="ring-label">/ 100</div></div>
+          </div>
+          <div style="flex:1">
+            <div class="qs-badge ${d.queueStatus}">● ${(d.queueStatus||'').replace('_',' ')}</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">Queue Health Score</div>
+            <div style="font-size:13px">Avg Sentiment:
+              <strong style="color:${scol(d.averageSentimentScore)}">${d.averageSentimentScore}/10</strong>
+              <span style="color:var(--text-muted);font-size:11px;margin-left:4px">${d.averageSentimentLabel||''}</span>
+            </div>
+            <div style="margin-top:8px;display:flex;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--text-muted)">
+              <span>In Progress: <strong style="color:var(--text)">${d.inProgressCount}</strong></span>
+              <span>Resolved: <strong style="color:var(--green)">${d.resolvedCount}</strong></span>
+              <span>Closed: <strong style="color:var(--text)">${d.closedCount}</strong></span>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Category Breakdown</div>
+          ${cats||'<span style="color:var(--text-muted);font-size:13px">Run AI analysis on tickets to populate</span>'}
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">AI Recommendations</div>
+        ${recs||'<span style="color:var(--text-muted);font-size:13px">No recommendations at this time</span>'}
+      </div>`
+  } catch(e) {
+    document.getElementById('db-content').innerHTML = `<div class="alert alert-r">${e.message}</div>`
+  }
+}
+
+// ─────────────────────────────────────────────────
+// TICKETS
+// ─────────────────────────────────────────────────
+async function loadTickets(status) {
+  document.getElementById('tix-content').innerHTML = '<div class="loading"><div class="spin"></div>Loading tickets…</div>'
+  try {
+    const path = status ? `/tickets?status=${status}` : '/tickets'
+    const tix = await call('GET', path)
+    renderTable(tix)
+  } catch(e) {
+    document.getElementById('tix-content').innerHTML = `<div class="alert alert-r">${e.message}</div>`
+  }
+}
+
+function filterTix(s, btn) {
+  curFilter = s
+  document.querySelectorAll('.ftab').forEach(t=>t.classList.remove('on'))
+  btn.classList.add('on')
+  loadTickets(s)
+}
+
+function renderTable(tix) {
+  if (!tix.length) {
+    document.getElementById('tix-content').innerHTML = '<div class="empty"><div class="empty-icon">🎫</div><div class="empty-title">No tickets found</div></div>'
+    return
+  }
+  const rows = tix.map(t => {
+    const rc = t.status==='ESCALATED'?'esc-row':t.priority==='CRITICAL'?'crit-row':''
+    const sent = t.sentimentScore
+      ? `<span class="sent-dot" style="background:${scol(t.sentimentScore)}"></span>${t.sentimentScore}/10`
+      : `<span style="color:var(--text-muted)">—</span>`
+    const risk = t.riskScore
+      ? `<span style="color:${rcol(t.riskScore)};font-weight:600">${t.riskScore}/10</span>`
+      : `<span style="color:var(--text-muted)">—</span>`
+    return `<tr class="${rc}" onclick="openTktModal(${t.id})">
+      <td>${tnum(t.ticketNumber)}</td>
+      <td><div style="font-weight:500">${t.customerName}</div><div style="color:var(--text-muted);font-size:11px">${t.customerEmail}</div></td>
+      <td style="max-width:200px"><div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px">${t.subject}</div></td>
+      <td>${badge(t.status)}</td>
+      <td>${badge(t.priority)}</td>
+      <td>${sent}</td>
+      <td>${risk}</td>
+      <td onclick="event.stopPropagation()">
+        <div class="fl" style="gap:3px">
+          <button class="btn btn-g btn-sm" onclick="analyzeStored(${t.id},'${t.ticketNumber}')">Analyze</button>
+          <button class="btn btn-v btn-sm" onclick="doDraft(${t.id},'${t.ticketNumber}')">Reply</button>
+        </div>
+      </td>
+    </tr>`
+  }).join('')
+  document.getElementById('tix-content').innerHTML = `
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>Ticket</th><th>Customer</th><th>Subject</th>
+          <th>Status</th><th>Priority</th><th>Sentiment</th><th>Risk</th><th>Actions</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`
+}
+
+// ─────────────────────────────────────────────────
+// TICKET DETAIL MODAL
+// ─────────────────────────────────────────────────
+async function openTktModal(id) {
+  openModal('Loading…','<div class="loading"><div class="spin"></div></div>')
+  try {
+    const t = await call('GET',`/tickets/${id}`)
+    const esc = t.escalationRequired ? '<span class="esc-chip">🚨 ESCALATION</span>' : ''
+    const si = t.sentimentScore ? `
+      <div class="metric-2">
+        <div class="metric-box"><div class="ml">Sentiment</div>
+          <div class="mv" style="color:${scol(t.sentimentScore)}">${t.sentimentScore}/10 ${t.sentimentLabel||''}</div>
+          ${bar(t.sentimentScore,10,scol(t.sentimentScore))}
+        </div>
+        <div class="metric-box"><div class="ml">Risk</div>
+          <div class="mv" style="color:${rcol(t.riskScore)}">${t.riskScore||'—'}/10</div>
+          ${t.riskScore?bar(t.riskScore,10,rcol(t.riskScore)):''}
+        </div>
+      </div>` : ''
+    openModal(`${t.ticketNumber} — ${t.customerName}`, `
+      <div class="fl gap-2 mb-4" style="flex-wrap:wrap">${badge(t.status)} ${badge(t.priority)} ${esc} ${t.category?`<span class="cat-chip">${t.category}</span>`:''}</div>
+      <div class="mb-4">
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:3px">CUSTOMER</div>
+        <div style="font-weight:600">${t.customerName}</div>
+        <div style="color:var(--text-muted);font-size:13px">${t.customerEmail}</div>
+      </div>
+      <div class="mb-4">
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:3px">SUBJECT</div>
+        <div style="font-weight:600">${t.subject}</div>
+      </div>
+      <div class="mb-4">
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:3px">MESSAGE</div>
+        <div style="font-size:13px;line-height:1.6;color:var(--text-dim)">${t.body}</div>
+      </div>
+      ${si}
+      ${t.assignedAgent?`<div style="font-size:12px;color:var(--text-muted);margin-bottom:12px">Assigned: <strong>${t.assignedAgent}</strong></div>`:''}
+      <div class="divider"></div>
+      <div class="fl gap-2" style="flex-wrap:wrap">
+        <button class="btn btn-p btn-sm" onclick="analyzeStored(${t.id},'${t.ticketNumber}')">⚡ AI Analyze</button>
+        <button class="btn btn-v btn-sm" onclick="doDraft(${t.id},'${t.ticketNumber}')">✍️ Draft Reply</button>
+        <select onchange="doStatusUpdate(${t.id},this.value)" style="width:auto;font-size:12px;padding:5px 9px">
+          <option value="">— Update Status —</option>
+          <option value="IN_PROGRESS">In Progress</option>
+          <option value="RESOLVED">Resolved</option>
+          <option value="CLOSED">Closed</option>
+        </select>
+        <button class="btn btn-r btn-sm" onclick="doDelete(${t.id});closeModal()">Delete</button>
+      </div>`)
+  } catch(e) { openModal('Error',`<div class="alert alert-r">${e.message}</div>`) }
+}
+
+// ─────────────────────────────────────────────────
+// ANALYZE STORED TICKET
+// ─────────────────────────────────────────────────
+async function analyzeStored(id, num) {
+  openModal(`Analyzing ${num}…`, '<div class="loading"><div class="spin"></div>AI is analyzing this ticket…</div>')
+  try {
+    const r = await call('POST',`/tickets/${id}/analyze`)
+    openModal(`AI Analysis — ${num}`, buildAnalysis(r))
+    toast('Analysis complete','ok')
+    if (curPage==='tickets') loadTickets(curFilter)
+    if (curPage==='escalation') loadEscalation()
+  } catch(e) { openModal('Analysis Failed',`<div class="alert alert-r">${e.message}</div>`) }
+}
+
+// ─────────────────────────────────────────────────
+// DRAFT REPLY
+// ─────────────────────────────────────────────────
+async function doDraft(id, num) {
+  openModal(`Drafting reply for ${num}…`, '<div class="loading"><div class="spin"></div>AI is crafting a professional reply…</div>')
+  try {
+    const r = await call('POST',`/tickets/${id}/draft-reply`)
+    openModal(`AI Draft Reply — ${num}`, buildDraft(r))
+    toast('Draft ready','ok')
+  } catch(e) { openModal('Draft Failed',`<div class="alert alert-r">${e.message}</div>`) }
+}
+
+// ─────────────────────────────────────────────────
+// RAW ANALYSIS
+// ─────────────────────────────────────────────────
+async function doAnalyze() {
+  const txt = document.getElementById('ai-input').value.trim()
+  if (!txt) { toast('Paste an email first','err'); return }
+  document.getElementById('ai-results').innerHTML = '<div class="loading"><div class="spin"></div>AI analyzing…</div>'
+  try {
+    const r = await call('POST','/ai/analyze',{rawText:txt})
+    document.getElementById('ai-results').innerHTML = buildAnalysis(r)
+    toast('Analysis complete','ok')
+  } catch(e) {
+    document.getElementById('ai-results').innerHTML = `<div class="alert alert-r">${e.message}</div>`
+  }
+}
+
+const SAMPLES = {
+  angry: `I am absolutely furious. Your system charged my corporate credit card TWICE for the annual plan — $2,400 was debited this morning on top of the charge last week. This is completely unacceptable and I am ready to dispute this with my bank and report this to the consumer protection agency. If this is not resolved TODAY I will be cancelling all 50 seats of our enterprise subscription and moving to a competitor.`,
+  security: `My account was accessed from an IP address in Eastern Europe at 3 AM yesterday. I have 2-factor auth enabled but someone still got in. There are 3 unauthorized API calls in my logs exporting customer data. This is a potential GDPR breach. I have already notified my legal team and they are asking for an incident report within 24 hours.`,
+  happy: `I just wanted to take a moment to say how impressed I am with your onboarding team. Emma from customer success spent 2 hours with me setting up integrations and was incredibly knowledgeable and patient. The platform itself is also fantastic — our team productivity has increased noticeably in just the first week. Will definitely be recommending your platform to others.`
+}
+
+function loadSample(k) {
+  document.getElementById('ai-input').value = SAMPLES[k]
+  document.getElementById('ai-results').innerHTML = '<div class="empty"><div class="empty-icon">✅</div><div class="empty-title">Sample loaded</div><div class="empty-sub">Click "Analyze with AI"</div></div>'
+}
+
+// ─────────────────────────────────────────────────
+// BUILD ANALYSIS HTML
+// ─────────────────────────────────────────────────
+function buildAnalysis(r) {
+  const escB = r.escalationRequired
+    ? `<span class="badge" style="background:rgba(239,68,68,.2);color:#f87171">🚨 ESCALATION</span>`
+    : `<span class="badge" style="background:rgba(16,185,129,.2);color:#34d399">✓ NO ESCALATION</span>`
+  const issues = (r.keyIssues||[]).map(i=>`<span class="key-tag">${i}</span>`).join('')
+  const ufacs  = (r.urgencyFactors||[]).map(i=>`<span class="urg-tag">${i}</span>`).join('')
+  return `
+    <div class="fl gap-2 mb-4" style="flex-wrap:wrap">
+      ${r.category?`<span class="cat-chip">${r.category}</span>`:''}
+      ${r.suggestedPriority?badge(r.suggestedPriority):''}
+      ${escB}
+    </div>
+    <div class="metric-2 mb-4">
+      <div class="metric-box">
+        <div class="ml">Sentiment Score</div>
+        <div class="mv" style="color:${scol(r.sentimentScore)}">${r.sentimentScore}/10</div>
+        <div style="color:var(--text-muted);font-size:11px;margin:2px 0">${r.sentimentLabel||''}</div>
+        ${bar(r.sentimentScore,10,scol(r.sentimentScore))}
+      </div>
+      <div class="metric-box">
+        <div class="ml">Risk Score</div>
+        <div class="mv" style="color:${rcol(r.riskScore)}">${r.riskScore}/10</div>
+        <div style="color:var(--text-muted);font-size:11px;margin:2px 0">${r.riskScore>=8?'CRITICAL RISK':r.riskScore>=6?'HIGH RISK':'MODERATE'}</div>
+        ${bar(r.riskScore,10,rcol(r.riskScore))}
+      </div>
+    </div>
+    ${r.sentimentAnalysis?`<div style="font-size:13px;color:var(--text-dim);line-height:1.5;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:12px">${r.sentimentAnalysis}</div>`:''}
+    ${issues?`<div class="mb-4"><div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">Key Issues</div>${issues}</div>`:''}
+    ${ufacs?`<div class="mb-4"><div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">Urgency Factors</div>${ufacs}</div>`:''}
+    ${r.recommendedAction?`<div class="reply-box"><div class="rl">Recommended Action</div><div style="font-size:13px">${r.recommendedAction}</div>${r.estimatedResolutionTime?`<div style="color:var(--text-muted);font-size:12px;margin-top:4px">Estimated: ${r.estimatedResolutionTime}</div>`:''}</div>`:''}
+    ${r.escalationReason?`<div class="alert alert-r">🚨 <strong>Escalation Reason:</strong> ${r.escalationReason}</div>`:''}
+    <div style="font-size:11px;color:var(--text-muted);margin-top:6px">Model: ${r.model||'AI'}</div>`
+}
+
+// ─────────────────────────────────────────────────
+// BUILD DRAFT HTML
+// ─────────────────────────────────────────────────
+function buildDraft(r) {
+  const toneStyle = {
+    APOLOGETIC:'background:rgba(239,68,68,.15);color:#fca5a5',
+    EMPATHETIC:'background:rgba(245,158,11,.15);color:#fcd34d',
+    PROFESSIONAL:'background:rgba(100,116,139,.15);color:#94a3b8',
+    INFORMATIONAL:'background:rgba(6,182,212,.15);color:#67e8f9'
+  }[r.tone]||'background:rgba(100,116,139,.15);color:#94a3b8'
+  const pts = (r.keyPointsAddressed||[]).map(p=>
+    `<div style="display:flex;gap:5px;font-size:12px;padding:2px 0"><span style="color:var(--green)">✓</span>${p}</div>`).join('')
+  return `
+    <div class="fl gap-2 mb-4" style="flex-wrap:wrap">
+      <span class="badge" style="${toneStyle}">${r.tone}</span>
+      ${r.includesRefundOffer?'<span class="badge" style="background:rgba(16,185,129,.2);color:#34d399">💰 Refund Offered</span>':''}
+    </div>
+    ${r.subject?`<div class="reply-box"><div class="rl">Subject Line</div><div style="font-size:13px;font-weight:600">${r.subject}</div></div>`:''}
+    <div class="reply-box">
+      <div class="rl">Full Reply</div>
+      <div class="reply-txt">${r.greeting?r.greeting+'\n\n':''}${r.body||''}\n\n${r.closing||''}</div>
+    </div>
+    ${pts?`<div class="reply-box"><div class="rl">Key Points Addressed</div>${pts}</div>`:''}
+    ${r.suggestedFollowUpIn?`<div style="font-size:12px;color:var(--text-muted)">Follow-up in: <strong style="color:var(--amber)">${r.suggestedFollowUpIn}</strong></div>`:''}
+    <div style="font-size:11px;color:var(--text-muted);margin-top:8px">Model: ${r.model||'AI'}</div>`
+}
+
+// ─────────────────────────────────────────────────
+// STATUS UPDATE & DELETE
+// ─────────────────────────────────────────────────
+async function doStatusUpdate(id, status) {
+  if (!status) return
+  try {
+    await call('PATCH',`/tickets/${id}/status`,{status})
+    toast(`Updated to ${status}`,'ok')
+    if (curPage==='tickets') loadTickets(curFilter)
+    if (curPage==='escalation') loadEscalation()
+  } catch(e) { toast('Update failed: '+e.message,'err') }
+}
+
+async function doDelete(id) {
+  if (!confirm('Delete this ticket?')) return
+  try {
+    await call('DELETE',`/tickets/${id}`)
+    toast('Ticket deleted','ok')
+    if (curPage==='tickets') loadTickets(curFilter)
+  } catch(e) { toast('Delete failed: '+e.message,'err') }
+}
+
+// ─────────────────────────────────────────────────
+// ESCALATION QUEUE
+// ─────────────────────────────────────────────────
+async function loadEscalation() {
+  document.getElementById('esc-content').innerHTML = '<div class="loading"><div class="spin"></div>Loading escalation queue…</div>'
+  try {
+    const tix = await call('GET','/tickets/escalation-queue')
+    document.getElementById('b-esc').textContent = tix.length
+    if (!tix.length) {
+      document.getElementById('esc-content').innerHTML = '<div class="empty"><div class="empty-icon">✅</div><div class="empty-title">Escalation queue is clear</div><div class="empty-sub">No tickets require immediate attention</div></div>'
+      return
+    }
+    const cards = tix.map(t=>`
+      <div class="triage-card" style="border-left:3px solid var(--red)" onclick="openTktModal(${t.id})">
+        <div style="flex:1">
+          <div class="fl gap-2 mb-4" style="flex-wrap:wrap;margin-bottom:7px">
+            ${tnum(t.ticketNumber)} ${badge(t.priority)} ${badge(t.status)}
+          </div>
+          <div style="font-weight:600;font-size:14px;margin-bottom:3px">${t.subject}</div>
+          <div style="color:var(--text-muted);font-size:13px;margin-bottom:4px">${t.customerName} — ${t.customerEmail}</div>
+          ${t.sentimentScore?`<span class="sent-dot" style="background:${scol(t.sentimentScore)}"></span><span style="font-size:12px;color:${scol(t.sentimentScore)};font-weight:600">${t.sentimentScore}/10 ${t.sentimentLabel||''}</span>`:''}
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end" onclick="event.stopPropagation()">
+          <button class="btn btn-v btn-sm" onclick="doDraft(${t.id},'${t.ticketNumber}')">Draft Reply</button>
+          <select onchange="doStatusUpdate(${t.id},this.value)" style="width:auto;font-size:11px;padding:3px 7px">
+            <option value="">Update…</option>
+            <option value="IN_PROGRESS">In Progress</option>
+            <option value="RESOLVED">Resolved</option>
+          </select>
+        </div>
+      </div>`).join('')
+    document.getElementById('esc-content').innerHTML =
+      `<div class="alert alert-r mb-4">🚨 ${tix.length} ticket${tix.length!==1?'s':''} require${tix.length===1?'s':''} immediate manager attention</div>${cards}`
+  } catch(e) {
+    document.getElementById('esc-content').innerHTML = `<div class="alert alert-r">${e.message}</div>`
+  }
+}
+
+// ─────────────────────────────────────────────────
+// BULK TRIAGE
+// ─────────────────────────────────────────────────
+async function loadTriageList() {
+  try {
+    const tix = await call('GET','/tickets?status=OPEN')
+    if (!tix.length) {
+      document.getElementById('triage-list').innerHTML = '<div style="color:var(--text-muted);font-size:13px;padding:8px 0">No open tickets</div>'
+      return
+    }
+    const items = tix.map(t=>`
+      <div class="chk-item ${selTriage.has(t.id)?'on':''}" onclick="toggleT(${t.id},this)">
+        <input type="checkbox" ${selTriage.has(t.id)?'checked':''} onclick="event.stopPropagation()">
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:600">${t.ticketNumber}</div>
+          <div style="color:var(--text-muted);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t.subject}</div>
+        </div>
+        ${badge(t.priority)}
+      </div>`).join('')
+    document.getElementById('triage-list').innerHTML = `<div class="chk-grid">${items}</div>`
+  } catch(e) {
+    document.getElementById('triage-list').innerHTML = `<div class="alert alert-r">${e.message}</div>`
+  }
+}
+
+function toggleT(id, el) {
+  if (selTriage.has(id)) { selTriage.delete(id); el.classList.remove('on'); el.querySelector('input').checked=false }
+  else { selTriage.add(id); el.classList.add('on'); el.querySelector('input').checked=true }
+  const n = selTriage.size
+  document.getElementById('sel-count').textContent = n+' selected'
+  document.getElementById('triage-btn').disabled = n < 2
+}
+
+async function doTriage() {
+  if (selTriage.size < 2) { toast('Select at least 2 tickets','err'); return }
+  document.getElementById('triage-results').innerHTML = '<div class="loading"><div class="spin"></div>AI ranking by urgency…</div>'
+  try {
+    const r = await call('POST','/tickets/bulk-triage',{ticketIds:[...selTriage]})
+    const sorted = [...(r.triaged||[])].sort((a,b)=>a.urgencyRank-b.urgencyRank)
+    const cards = sorted.map(t=>{
+      const rc = t.urgencyRank===1?'r1':t.urgencyRank===2?'r2':t.urgencyRank===3?'r3':'ro'
+      return `<div class="triage-card">
+        <div class="rank-box ${rc}">#${t.urgencyRank}</div>
+        <div style="flex:1">
+          <div class="fl gap-2 mb-4" style="flex-wrap:wrap;margin-bottom:5px">
+            ${tnum(t.ticketNumber)} ${badge(t.suggestedPriority)}
+            ${t.escalationRequired?'<span class="esc-chip" style="font-size:10px">🚨 Escalate</span>':''}
+          </div>
+          <div style="font-weight:500;font-size:13px;margin-bottom:3px">${t.subject||''}</div>
+          <div style="color:var(--text-muted);font-size:12px">${t.urgencyReason||''}</div>
+        </div>
+      </div>`
+    }).join('')
+    document.getElementById('triage-results').innerHTML = `
+      <div class="card mb-4">
+        <div style="display:flex;gap:20px;flex-wrap:wrap">
+          <div><div class="stat-label">Triaged</div><div class="stat-value" style="color:var(--cyan)">${r.totalTriaged}</div></div>
+          <div><div class="stat-label">Escalations</div><div class="stat-value" style="color:var(--red)">${r.escalationCount}</div></div>
+        </div>
+        ${r.overallInsight?`<div class="divider"></div><div style="font-size:13px;color:var(--text-dim);line-height:1.5">${r.overallInsight}</div>`:''}
+      </div>
+      ${cards}`
+    toast('Triage complete','ok')
+  } catch(e) {
+    document.getElementById('triage-results').innerHTML = `<div class="alert alert-r">${e.message}</div>`
+  }
+}
+
+// ─────────────────────────────────────────────────
+// CREATE TICKET
+// ─────────────────────────────────────────────────
+function openCreate() {
+  openModal('New Support Ticket', `
+    <div class="fg"><label class="fl-label">Customer Name *</label><input id="cn" placeholder="Sarah Mitchell"></div>
+    <div class="fg"><label class="fl-label">Customer Email *</label><input id="ce" type="email" placeholder="sarah@company.com"></div>
+    <div class="fg"><label class="fl-label">Subject *</label><input id="cs" placeholder="Brief description of issue"></div>
+    <div class="fg"><label class="fl-label">Message *</label><textarea id="cb" rows="5" placeholder="Full customer message…"></textarea></div>
+    <div class="fl gap-2">
+      <select id="csrc" style="width:auto"><option value="EMAIL">Email</option><option value="CHAT">Chat</option><option value="PHONE">Phone</option></select>
+      <button class="btn btn-p" onclick="submitCreate()">Create Ticket</button>
+      <button class="btn btn-g" onclick="closeModal()">Cancel</button>
+    </div>`)
+}
+
+async function submitCreate() {
+  const name=document.getElementById('cn').value.trim()
+  const email=document.getElementById('ce').value.trim()
+  const subject=document.getElementById('cs').value.trim()
+  const body=document.getElementById('cb').value.trim()
+  const source=document.getElementById('csrc').value
+  if (!name||!email||!subject||!body) { toast('All fields required','err'); return }
+  try {
+    const t = await call('POST','/tickets',{customerName:name,customerEmail:email,subject,body,source})
+    toast(`Created ${t.ticketNumber}`,'ok')
+    closeModal()
+    if (curPage==='tickets') loadTickets(curFilter)
+  } catch(e) { toast('Create failed: '+e.message,'err') }
+}
+
+// ─────────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────────
+async function init() {
+  try {
+    await fetch('/api/support/tickets')
+    document.getElementById('api-dot').className = 'dot'
+    document.getElementById('api-txt').textContent = 'API Connected'
+  } catch {
+    document.getElementById('api-dot').className = 'dot off'
+    document.getElementById('api-txt').textContent = 'API Offline'
+  }
+  loadDashboard()
+  // Prefetch badge counts silently
+  call('GET','/tickets').then(t=>{
+    document.getElementById('b-open').textContent = (t||[]).filter(x=>x.status==='OPEN').length
+  }).catch(()=>{})
+  call('GET','/tickets/escalation-queue').then(t=>{
+    document.getElementById('b-esc').textContent = (t||[]).length
+  }).catch(()=>{})
+  setInterval(async()=>{
+    try { await fetch('/api/support/tickets'); document.getElementById('api-dot').className='dot'; document.getElementById('api-txt').textContent='API Connected' }
+    catch { document.getElementById('api-dot').className='dot off'; document.getElementById('api-txt').textContent='API Offline' }
+  }, 30000)
+}
+init()
+</script>
+</body>
+</html>
