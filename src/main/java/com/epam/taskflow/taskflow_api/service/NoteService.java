@@ -25,10 +25,10 @@ public class NoteService {
     private final TaskRepository taskRepository;
 
     @Transactional
-    public NoteResponseDTO createNote(NoteRequestDTO requestDTO) {
-        log.info("Creating note for taskId: {}", requestDTO.getTaskId());
-        Task task = taskRepository.findById(requestDTO.getTaskId())
-                .orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + requestDTO.getTaskId()));
+    public NoteResponseDTO createNote(Long taskId, NoteRequestDTO requestDTO) {
+        log.info("Creating note for taskId: {}", taskId);
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + taskId));
         Note note = noteMapper.toEntity(requestDTO, task);
         Note savedNote = noteRepository.save(note);
         return noteMapper.toResponseDTO(savedNote);

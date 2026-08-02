@@ -17,78 +17,78 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/notes")
+@RequestMapping("/api/tasks/{taskId}/notes")
 @RequiredArgsConstructor
 @Slf4j
-@Tag(name = "Note Management", description = "APIs for managing notes")
+@Tag(name = "Note Management", description = "APIs for managing notes on a task")
 public class NoteController {
 
     private final NoteService noteService;
 
     @PostMapping
-    @Operation(summary = "Create a new note")
+    @Operation(summary = "Add a note to a task")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Note created successfully"),
             @ApiResponse(responseCode = "400", description = "Validation failed"),
-            @ApiResponse(responseCode = "404", description = "Task not found"),
-            @ApiResponse(responseCode = "500", description = "Internal server error")
+            @ApiResponse(responseCode = "404", description = "Task not found")
     })
-    public ResponseEntity<NoteResponseDTO> createNote(@RequestBody @Valid NoteRequestDTO requestDTO) {
-        log.info("POST /api/notes - Creating note for taskId: {}", requestDTO.getTaskId());
-        NoteResponseDTO createdNote = noteService.createNote(requestDTO);
+    public ResponseEntity<NoteResponseDTO> createNote(@PathVariable Long taskId,
+                                                      @RequestBody @Valid NoteRequestDTO requestDTO) {
+        log.info("POST /api/tasks/{}/notes - Creating note", taskId);
+        NoteResponseDTO createdNote = noteService.createNote(taskId, requestDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdNote);
     }
 
-    @GetMapping("/{id}")
-    @Operation(summary = "Get note by ID")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Note retrieved successfully"),
-            @ApiResponse(responseCode = "404", description = "Note not found"),
-            @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
-    public ResponseEntity<NoteResponseDTO> getNoteById(@PathVariable Long id) {
-        log.info("GET /api/notes/{} - Retrieving note", id);
-        NoteResponseDTO note = noteService.getNoteById(id);
-        return ResponseEntity.ok(note);
-    }
-
-    @GetMapping("/task/{taskId}")
+    @GetMapping
     @Operation(summary = "Get all notes for a task")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Notes retrieved successfully"),
-            @ApiResponse(responseCode = "404", description = "Task not found"),
-            @ApiResponse(responseCode = "500", description = "Internal server error")
+            @ApiResponse(responseCode = "404", description = "Task not found")
     })
     public ResponseEntity<List<NoteResponseDTO>> getNotesByTaskId(@PathVariable Long taskId) {
-        log.info("GET /api/notes/task/{} - Retrieving notes for task", taskId);
+        log.info("GET /api/tasks/{}/notes - Retrieving notes", taskId);
         List<NoteResponseDTO> notes = noteService.getNotesByTaskId(taskId);
         return ResponseEntity.ok(notes);
     }
 
-    @PutMapping("/{id}")
-    @Operation(summary = "Update an existing note")
+    @GetMapping("/{noteId}")
+    @Operation(summary = "Get a specific note")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Note retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "Note not found")
+    })
+    public ResponseEntity<NoteResponseDTO> getNoteById(@PathVariable Long taskId,
+                                                       @PathVariable Long noteId) {
+        log.info("GET /api/tasks/{}/notes/{} - Retrieving note", taskId, noteId);
+        NoteResponseDTO note = noteService.getNoteById(noteId);
+        return ResponseEntity.ok(note);
+    }
+
+    @PutMapping("/{noteId}")
+    @Operation(summary = "Update a note")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Note updated successfully"),
             @ApiResponse(responseCode = "400", description = "Validation failed"),
-            @ApiResponse(responseCode = "404", description = "Note not found"),
-            @ApiResponse(responseCode = "500", description = "Internal server error")
+            @ApiResponse(responseCode = "404", description = "Note not found")
     })
-    public ResponseEntity<NoteResponseDTO> updateNote(@PathVariable Long id, @RequestBody @Valid NoteRequestDTO requestDTO) {
-        log.info("PUT /api/notes/{} - Updating note", id);
-        NoteResponseDTO updatedNote = noteService.updateNote(id, requestDTO);
+    public ResponseEntity<NoteResponseDTO> updateNote(@PathVariable Long taskId,
+                                                      @PathVariable Long noteId,
+                                                      @RequestBody @Valid NoteRequestDTO requestDTO) {
+        log.info("PUT /api/tasks/{}/notes/{} - Updating note", taskId, noteId);
+        NoteResponseDTO updatedNote = noteService.updateNote(noteId, requestDTO);
         return ResponseEntity.ok(updatedNote);
     }
 
-    @DeleteMapping("/{id}")
-    @Operation(summary = "Delete note by ID")
+    @DeleteMapping("/{noteId}")
+    @Operation(summary = "Delete a note")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Note deleted successfully"),
-            @ApiResponse(responseCode = "404", description = "Note not found"),
-            @ApiResponse(responseCode = "500", description = "Internal server error")
+            @ApiResponse(responseCode = "404", description = "Note not found")
     })
-    public ResponseEntity<Void> deleteNote(@PathVariable Long id) {
-        log.info("DELETE /api/notes/{} - Deleting note", id);
-        noteService.deleteNote(id);
+    public ResponseEntity<Void> deleteNote(@PathVariable Long taskId,
+                                           @PathVariable Long noteId) {
+        log.info("DELETE /api/tasks/{}/notes/{} - Deleting note", taskId, noteId);
+        noteService.deleteNote(noteId);
         return ResponseEntity.noContent().build();
     }
 }
