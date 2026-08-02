@@ -39,6 +39,15 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(HttpStatus.BAD_REQUEST, validationMessage, request.getRequestURI());
     }
 
+    @ExceptionHandler(AiParsingException.class)
+    public ResponseEntity<ErrorResponse> handleAiParsingException(
+            AiParsingException ex,
+            HttpServletRequest request) {
+        log.error("AI response parsing failed: {}", ex.getMessage());
+        return buildErrorResponse(HttpStatus.BAD_GATEWAY,
+                "AI returned an unparseable response: " + ex.getMessage(), request.getRequestURI());
+    }
+
     @ExceptionHandler(HttpStatusCodeException.class)
     public ResponseEntity<ErrorResponse> handleHttpStatusCodeException(
             HttpStatusCodeException ex,

@@ -11,4 +11,6 @@ import java.util.List;
 public interface NoteRepository extends JpaRepository<Note, Long> {
 
     List<Note> findByTask(Task task);
+
+    List<Note> findByTaskId(Long taskId);
 }

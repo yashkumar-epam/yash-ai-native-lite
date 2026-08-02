@@ -3,11 +3,7 @@ package com.epam.taskflow.taskflow_api.service;
 import com.epam.taskflow.taskflow_api.dto.AiQueryRequestDTO;
 import com.epam.taskflow.taskflow_api.dto.AiQueryResponseDTO;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClient;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -15,7 +11,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -30,55 +25,25 @@ public class AiService {
             "Answer questions about the code accurately and concisely. " +
             "Base your answers on the provided Java source files.";
 
-    private final RestClient dialRestClient;
-    private final String dialModel;
-    private final String dialApiVersion;
+    private final DialGateway dialGateway;
 
-    public AiService(RestClient dialRestClient,
-                     @Value("${dial.model}") String dialModel,
-                     @Value("${dial.api-version}") String dialApiVersion) {
-        this.dialRestClient = dialRestClient;
-        this.dialModel = dialModel;
-        this.dialApiVersion = dialApiVersion;
+    public AiService(DialGateway dialGateway) {
+        this.dialGateway = dialGateway;
     }
 
     public AiQueryResponseDTO askQuestion(AiQueryRequestDTO request) {
         log.info("Processing AI question: {}", request.getQuestion());
         List<Path> sourceFiles = loadSourceFilePaths();
         String context = buildContext(sourceFiles);
-        String answer = queryModel(request.getQuestion(), context);
+        String userMessage = context.isBlank()
+                ? request.getQuestion()
+                : "Context from the codebase:\n\n" + context + "\nQuestion: " + request.getQuestion();
+        String answer = dialGateway.chat(SYSTEM_PROMPT, userMessage);
         return AiQueryResponseDTO.builder()
                 .answer(answer)
-                .model(dialModel)
+                .model(dialGateway.getModel())
                 .contextFilesUsed(sourceFiles.size())
                 .build();
-    }
-
-    @SuppressWarnings("unchecked")
-    String queryModel(String question, String context) {
-        String userMessage = context.isBlank()
-                ? question
-                : "Context from the codebase:\n\n" + context + "\nQuestion: " + question;
-
-        Map<String, Object> body = Map.of(
-                "messages", List.of(
-                        Map.of("role", "system", "content", SYSTEM_PROMPT),
-                        Map.of("role", "user", "content", userMessage)
-                ),
-                "max_completion_tokens", 2048
-        );
-
-        Map<String, Object> response = dialRestClient.post()
-                .uri("/openai/deployments/{model}/chat/completions?api-version={version}",
-                        dialModel, dialApiVersion)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(body)
-                .retrieve()
-                .body(new ParameterizedTypeReference<Map<String, Object>>() {});
-
-        List<Map<String, Object>> choices = (List<Map<String, Object>>) response.get("choices");
-        Map<String, Object> message = (Map<String, Object>) choices.get(0).get("message");
-        return (String) message.get("content");
     }
 
     private List<Path> loadSourceFilePaths() {

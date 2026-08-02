@@ -26,6 +26,9 @@ multi-agent workflows + automated hooks — a full AI-native SDLC.
 | `/api-code-review` | Multi-dimension review of current staged changes |
 | `/add-endpoint <method> <path>` | Scaffold a new REST endpoint following all conventions |
 | `/validate-conventions` | Audit all Java files against project rules; report violations |
+| `/demo-setup` | Verify SupportIQ app is running and print full management demo script |
+| `/support-briefing` | Fetch live queue data and format an executive support summary |
+| `/triage-queue` | Run AI bulk triage on open tickets and produce a ranked work queue |
 
 ### Multi-Agent Workflows
 
@@ -34,8 +37,10 @@ multi-agent workflows + automated hooks — a full AI-native SDLC.
 | `feature-implementation` | `{issueNumber: N}` | Research → Plan → Parallel implementation per layer → Tests → Review |
 | `code-review` | _(none)_ | 4 parallel agents: conventions, validation, tests, API design |
 | `test-generation` | `{className?}` | Gap analysis → parallel test writers → quality validation |
+| `support-ai-insights` | `{baseUrl?}` | 4 parallel AI analysts: queue health + risk scan + sentiment + category patterns → executive briefing |
+| `demo-prep` | `{baseUrl?}` | Verify all SupportIQ AI endpoints + generate personalised demo talking points from real response data |
 
-Run a workflow: ask Claude Code `"run the feature-implementation workflow for issue #5"`.
+Run a workflow: ask Claude Code `"run the support-ai-insights workflow"`.
 
 ### Specialist Agents
 
@@ -44,6 +49,9 @@ Run a workflow: ask Claude Code `"run the feature-implementation workflow for is
 | `taskflow-architect` | Architecture decisions, package design, dependency trade-offs |
 | `taskflow-reviewer` | Code-quality review before merging |
 | `taskflow-tester` | Writing or improving JUnit 5 / Mockito / MockMvc tests |
+| `support-analyst-agent` | Analysing ticket content, writing AI prompts, sentiment/escalation logic |
+| `demo-guide-agent` | Demo scripting, management talking points, ROI framing for SupportIQ |
+| `support-triage-agent` | Queue management, SLA analysis, triage strategy for support backlog |
 
 ---
 
@@ -128,4 +136,5 @@ using the template at `.claude/hooks/README.md`.
 | 4 | ✅ Done | `dueDate` field via GitHub MCP issue #3 | Claude Code + GitHub MCP |
 | 5 | ✅ Done | Notes feature (Task notes CRUD) | Claude Code + specialist agents |
 | 6 | ✅ Done | RAG over codebase — `POST /api/ai/ask` with Claude | Claude Code + Anthropic SDK |
-| 7 | ⏳ | End-to-end management showcase | |
+| 7 | ✅ Done | End-to-end management showcase — CI pipeline and Postman demo | Claude Code |
+| 8 | ✅ Done | SupportIQ — Customer Support AI Platform (5 AI endpoints, 20 demo tickets, 3 agents, 3 skills, 2 workflows) | Claude Code + EPAM DIAL + multi-agent |

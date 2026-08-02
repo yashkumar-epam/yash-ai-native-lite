@@ -1,8 +1,8 @@
 {
   "info": {
-    "name": "TaskFlow API — Management Demo",
+    "name": "TaskFlow API \u00e2\u20ac\u201d Management Demo",
     "_postman_id": "taskflow-demo-v1",
-    "description": "End-to-end demo collection for the TaskFlow Spring Boot API.\nCovers the full flow: Create Task → Add Notes → Query AI → Cleanup.\n\nSet the `baseUrl` collection variable before running (default: http://localhost:8080).",
+    "description": "End-to-end demo collection for the TaskFlow Spring Boot API.\nCovers the full flow: Create Task \u00e2\u2020\u2019 Add Notes \u00e2\u2020\u2019 Query AI \u00e2\u2020\u2019 Cleanup.\n\nSet the `baseUrl` collection variable before running (default: http://localhost:8080).",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -20,11 +20,16 @@
       "key": "noteId",
       "value": "",
       "type": "string"
+    },
+    {
+      "key": "ticketId",
+      "value": "1",
+      "type": "string"
     }
   ],
   "item": [
     {
-      "name": "1 — Tasks",
+      "name": "1 \u00e2\u20ac\u201d Tasks",
       "item": [
         {
           "name": "Create Task",
@@ -45,12 +50,26 @@
           ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"title\": \"Fix login bug\",\n  \"description\": \"Users cannot log in with Google OAuth on mobile.\",\n  \"status\": \"TODO\",\n  \"priority\": \"HIGH\",\n  \"dueDate\": \"2026-12-31\"\n}"
             },
-            "url": { "raw": "{{baseUrl}}/api/tasks", "host": ["{{baseUrl}}"], "path": ["api", "tasks"] }
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tasks"
+              ]
+            }
           }
         },
         {
@@ -69,7 +88,16 @@
           ],
           "request": {
             "method": "GET",
-            "url": { "raw": "{{baseUrl}}/api/tasks", "host": ["{{baseUrl}}"], "path": ["api", "tasks"] }
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tasks"
+              ]
+            }
           }
         },
         {
@@ -92,9 +120,24 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/api/tasks/paged?page=0&size=10",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "tasks", "paged"],
-              "query": [{ "key": "page", "value": "0" }, { "key": "size", "value": "10" }]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tasks",
+                "paged"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
             }
           }
         },
@@ -114,11 +157,21 @@
           ],
           "request": {
             "method": "GET",
-            "url": { "raw": "{{baseUrl}}/api/tasks/{{taskId}}", "host": ["{{baseUrl}}"], "path": ["api", "tasks", "{{taskId}}"] }
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks/{{taskId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tasks",
+                "{{taskId}}"
+              ]
+            }
           }
         },
         {
-          "name": "Update Task — Mark IN_PROGRESS",
+          "name": "Update Task \u00e2\u20ac\u201d Mark IN_PROGRESS",
           "event": [
             {
               "listen": "test",
@@ -133,16 +186,31 @@
           ],
           "request": {
             "method": "PUT",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"title\": \"Fix login bug\",\n  \"description\": \"Users cannot log in with Google OAuth on mobile.\",\n  \"status\": \"IN_PROGRESS\",\n  \"priority\": \"HIGH\",\n  \"dueDate\": \"2026-12-31\"\n}"
             },
-            "url": { "raw": "{{baseUrl}}/api/tasks/{{taskId}}", "host": ["{{baseUrl}}"], "path": ["api", "tasks", "{{taskId}}"] }
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks/{{taskId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tasks",
+                "{{taskId}}"
+              ]
+            }
           }
         },
         {
-          "name": "Filter by Status — IN_PROGRESS",
+          "name": "Filter by Status \u00e2\u20ac\u201d IN_PROGRESS",
           "event": [
             {
               "listen": "test",
@@ -159,11 +227,22 @@
           ],
           "request": {
             "method": "GET",
-            "url": { "raw": "{{baseUrl}}/api/tasks/status/IN_PROGRESS", "host": ["{{baseUrl}}"], "path": ["api", "tasks", "status", "IN_PROGRESS"] }
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks/status/IN_PROGRESS",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tasks",
+                "status",
+                "IN_PROGRESS"
+              ]
+            }
           }
         },
         {
-          "name": "Filter by Priority — HIGH",
+          "name": "Filter by Priority \u00e2\u20ac\u201d HIGH",
           "event": [
             {
               "listen": "test",
@@ -177,7 +256,18 @@
           ],
           "request": {
             "method": "GET",
-            "url": { "raw": "{{baseUrl}}/api/tasks/priority/HIGH", "host": ["{{baseUrl}}"], "path": ["api", "tasks", "priority", "HIGH"] }
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks/priority/HIGH",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tasks",
+                "priority",
+                "HIGH"
+              ]
+            }
           }
         },
         {
@@ -197,16 +287,27 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/api/tasks/search?keyword=login",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "tasks", "search"],
-              "query": [{ "key": "keyword", "value": "login" }]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tasks",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "keyword",
+                  "value": "login"
+                }
+              ]
             }
           }
         }
       ]
     },
     {
-      "name": "2 — Notes",
+      "name": "2 \u00e2\u20ac\u201d Notes",
       "item": [
         {
           "name": "Add Note to Task",
@@ -226,12 +327,28 @@
           ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"content\": \"Reproduced on iOS 17. OAuth token exchange fails with 401.\"\n}"
             },
-            "url": { "raw": "{{baseUrl}}/api/tasks/{{taskId}}/notes", "host": ["{{baseUrl}}"], "path": ["api", "tasks", "{{taskId}}", "notes"] }
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks/{{taskId}}/notes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tasks",
+                "{{taskId}}",
+                "notes"
+              ]
+            }
           }
         },
         {
@@ -250,7 +367,18 @@
           ],
           "request": {
             "method": "GET",
-            "url": { "raw": "{{baseUrl}}/api/tasks/{{taskId}}/notes", "host": ["{{baseUrl}}"], "path": ["api", "tasks", "{{taskId}}", "notes"] }
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks/{{taskId}}/notes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tasks",
+                "{{taskId}}",
+                "notes"
+              ]
+            }
           }
         },
         {
@@ -269,7 +397,19 @@
           ],
           "request": {
             "method": "GET",
-            "url": { "raw": "{{baseUrl}}/api/tasks/{{taskId}}/notes/{{noteId}}", "host": ["{{baseUrl}}"], "path": ["api", "tasks", "{{taskId}}", "notes", "{{noteId}}"] }
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks/{{taskId}}/notes/{{noteId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tasks",
+                "{{taskId}}",
+                "notes",
+                "{{noteId}}"
+              ]
+            }
           }
         },
         {
@@ -288,12 +428,29 @@
           ],
           "request": {
             "method": "PUT",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"content\": \"FIXED — updated redirect URI in Google Cloud Console. Deploy to staging pending.\"\n}"
+              "raw": "{\n  \"content\": \"FIXED \u00e2\u20ac\u201d updated redirect URI in Google Cloud Console. Deploy to staging pending.\"\n}"
             },
-            "url": { "raw": "{{baseUrl}}/api/tasks/{{taskId}}/notes/{{noteId}}", "host": ["{{baseUrl}}"], "path": ["api", "tasks", "{{taskId}}", "notes", "{{noteId}}"] }
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks/{{taskId}}/notes/{{noteId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tasks",
+                "{{taskId}}",
+                "notes",
+                "{{noteId}}"
+              ]
+            }
           }
         },
         {
@@ -311,16 +468,28 @@
           ],
           "request": {
             "method": "DELETE",
-            "url": { "raw": "{{baseUrl}}/api/tasks/{{taskId}}/notes/{{noteId}}", "host": ["{{baseUrl}}"], "path": ["api", "tasks", "{{taskId}}", "notes", "{{noteId}}"] }
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks/{{taskId}}/notes/{{noteId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tasks",
+                "{{taskId}}",
+                "notes",
+                "{{noteId}}"
+              ]
+            }
           }
         }
       ]
     },
     {
-      "name": "3 — AI (RAG)",
+      "name": "3 \u00e2\u20ac\u201d AI (RAG)",
       "item": [
         {
-          "name": "Ask — What does TaskController do?",
+          "name": "Ask \u00e2\u20ac\u201d What does TaskController do?",
           "event": [
             {
               "listen": "test",
@@ -338,16 +507,31 @@
           ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"question\": \"What does the TaskController do? List all its endpoints.\"\n}"
             },
-            "url": { "raw": "{{baseUrl}}/api/ai/ask", "host": ["{{baseUrl}}"], "path": ["api", "ai", "ask"] }
+            "url": {
+              "raw": "{{baseUrl}}/api/ai/ask",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "ai",
+                "ask"
+              ]
+            }
           }
         },
         {
-          "name": "Ask — How is validation handled?",
+          "name": "Ask \u00e2\u20ac\u201d How is validation handled?",
           "event": [
             {
               "listen": "test",
@@ -362,16 +546,31 @@
           ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"question\": \"How is input validation handled in this project? Which fields are validated and what are the error messages?\"\n}"
             },
-            "url": { "raw": "{{baseUrl}}/api/ai/ask", "host": ["{{baseUrl}}"], "path": ["api", "ai", "ask"] }
+            "url": {
+              "raw": "{{baseUrl}}/api/ai/ask",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "ai",
+                "ask"
+              ]
+            }
           }
         },
         {
-          "name": "Ask — Validation: blank question (expect 400)",
+          "name": "Ask \u00e2\u20ac\u201d Validation: blank question (expect 400)",
           "event": [
             {
               "listen": "test",
@@ -385,21 +584,36 @@
           ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"question\": \"\"\n}"
             },
-            "url": { "raw": "{{baseUrl}}/api/ai/ask", "host": ["{{baseUrl}}"], "path": ["api", "ai", "ask"] }
+            "url": {
+              "raw": "{{baseUrl}}/api/ai/ask",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "ai",
+                "ask"
+              ]
+            }
           }
         }
       ]
     },
     {
-      "name": "4 — Validation Showcase",
+      "name": "4 \u00e2\u20ac\u201d Validation Showcase",
       "item": [
         {
-          "name": "Create Task — Missing title (expect 400)",
+          "name": "Create Task \u00e2\u20ac\u201d Missing title (expect 400)",
           "event": [
             {
               "listen": "test",
@@ -414,16 +628,30 @@
           ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"status\": \"TODO\",\n  \"priority\": \"LOW\"\n}"
             },
-            "url": { "raw": "{{baseUrl}}/api/tasks", "host": ["{{baseUrl}}"], "path": ["api", "tasks"] }
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tasks"
+              ]
+            }
           }
         },
         {
-          "name": "Create Task — Past due date (expect 400)",
+          "name": "Create Task \u00e2\u20ac\u201d Past due date (expect 400)",
           "event": [
             {
               "listen": "test",
@@ -438,16 +666,30 @@
           ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"title\": \"Old task\",\n  \"status\": \"TODO\",\n  \"priority\": \"LOW\",\n  \"dueDate\": \"2020-01-01\"\n}"
             },
-            "url": { "raw": "{{baseUrl}}/api/tasks", "host": ["{{baseUrl}}"], "path": ["api", "tasks"] }
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tasks"
+              ]
+            }
           }
         },
         {
-          "name": "Create Task — Invalid status (expect 400)",
+          "name": "Create Task \u00e2\u20ac\u201d Invalid status (expect 400)",
           "event": [
             {
               "listen": "test",
@@ -461,16 +703,30 @@
           ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"title\": \"Bad status task\",\n  \"status\": \"INVALID\",\n  \"priority\": \"LOW\"\n}"
             },
-            "url": { "raw": "{{baseUrl}}/api/tasks", "host": ["{{baseUrl}}"], "path": ["api", "tasks"] }
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tasks"
+              ]
+            }
           }
         },
         {
-          "name": "Get Task — Not found (expect 404)",
+          "name": "Get Task \u00e2\u20ac\u201d Not found (expect 404)",
           "event": [
             {
               "listen": "test",
@@ -484,13 +740,23 @@
           ],
           "request": {
             "method": "GET",
-            "url": { "raw": "{{baseUrl}}/api/tasks/99999", "host": ["{{baseUrl}}"], "path": ["api", "tasks", "99999"] }
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks/99999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tasks",
+                "99999"
+              ]
+            }
           }
         }
       ]
     },
     {
-      "name": "5 — Cleanup",
+      "name": "5 \u00e2\u20ac\u201d Cleanup",
       "item": [
         {
           "name": "Delete Task",
@@ -507,7 +773,17 @@
           ],
           "request": {
             "method": "DELETE",
-            "url": { "raw": "{{baseUrl}}/api/tasks/{{taskId}}", "host": ["{{baseUrl}}"], "path": ["api", "tasks", "{{taskId}}"] }
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks/{{taskId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tasks",
+                "{{taskId}}"
+              ]
+            }
           }
         },
         {
@@ -525,7 +801,280 @@
           ],
           "request": {
             "method": "GET",
-            "url": { "raw": "{{baseUrl}}/api/tasks/{{taskId}}", "host": ["{{baseUrl}}"], "path": ["api", "tasks", "{{taskId}}"] }
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks/{{taskId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "tasks",
+                "{{taskId}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6 \u2014 SupportIQ (AI Demo)",
+      "description": "Customer Support Intelligence Platform \u2014 AI-powered ticket analysis, sentiment scoring, risk detection, draft reply generation, bulk triage, and live dashboard.",
+      "item": [
+        {
+          "name": "01 HERO \u2014 Analyze Raw Email",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rawText\": \"I am absolutely furious. Your system charged my corporate credit card TWICE for the annual plan \\u2014 $2,400 was debited this morning. This is completely unacceptable. I am ready to dispute this with my bank and report this to the consumer protection agency. If this is not resolved TODAY I will be cancelling all 50 seats of our enterprise subscription.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/support/ai/analyze",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "support",
+                "ai",
+                "analyze"
+              ]
+            }
+          }
+        },
+        {
+          "name": "02 AI Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/support/dashboard",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "support",
+                "dashboard"
+              ]
+            }
+          }
+        },
+        {
+          "name": "03 Analyze Existing Ticket (id=1)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Has escalation flag\", () => pm.expect(j.escalationRequired).to.be.a(\"boolean\"));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/support/tickets/1/analyze",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "support",
+                "tickets",
+                "1",
+                "analyze"
+              ]
+            }
+          }
+        },
+        {
+          "name": "04 Draft Reply for Ticket (id=2)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/support/tickets/2/draft-reply",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "support",
+                "tickets",
+                "2",
+                "draft-reply"
+              ]
+            }
+          }
+        },
+        {
+          "name": "05 Bulk Triage",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ticketIds\": [\n    1,\n    3,\n    5,\n    6,\n    7,\n    10,\n    17,\n    18\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/support/tickets/bulk-triage",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "support",
+                "tickets",
+                "bulk-triage"
+              ]
+            }
+          }
+        },
+        {
+          "name": "06 Escalation Queue",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/support/tickets/escalation-queue",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "support",
+                "tickets",
+                "escalation-queue"
+              ]
+            }
+          }
+        },
+        {
+          "name": "07 List All Tickets",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/support/tickets",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "support",
+                "tickets"
+              ]
+            }
+          }
+        },
+        {
+          "name": "08 List Open Tickets",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/support/tickets?status=OPEN",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "support",
+                "tickets"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "OPEN"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "09 Create Ticket",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "const j = pm.response.json();",
+                  "pm.collectionVariables.set(\"ticketId\", j.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerName\": \"Demo User\",\n  \"customerEmail\": \"demo@example.com\",\n  \"subject\": \"Demo ticket from Postman\",\n  \"body\": \"This is a demo ticket created during the management presentation.\",\n  \"source\": \"EMAIL\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/support/tickets",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "support",
+                "tickets"
+              ]
+            }
+          }
+        },
+        {
+          "name": "10 Update Ticket Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"IN_PROGRESS\",\n  \"assignedAgent\": \"Alex Rivera\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/support/tickets/{{ticketId}}/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "support",
+                "tickets",
+                "{{ticketId}}",
+                "status"
+              ]
+            }
           }
         }
       ]
