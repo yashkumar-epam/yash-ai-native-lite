@@ -18,8 +18,10 @@
 
 - [ ] VPN connected to EPAM network
 - [ ] `mvn spring-boot:run` started and app is running
-- [ ] Browser open at `http://localhost:8080`
+- [ ] Browser open at `http://localhost:8080` — on the **Dashboard** page
 - [ ] Browser zoom at 100% — not zoomed in or out
+- [ ] Verify the sidebar shows: Dashboard · All Tickets · Escalation Queue · **👁️ Before AI (Manual)** · Analyze Email · Bulk Triage
+- [ ] Click "Before AI (Manual)" once to confirm the table loads — then go back to Dashboard
 - [ ] Postman open with SupportIQ collection loaded — minimised in taskbar
 - [ ] This script open on your phone or a second monitor
 - [ ] Glass of water nearby
@@ -54,7 +56,7 @@ SAY:
 
 ---
 
-## ACT 1 — The Raw Queue ( ~1 minute )
+## ACT 1 — The Problem: Every Ticket Looks The Same ( ~2 minutes )
 ### ( Share your screen now. Browser should be open at http://localhost:8080 )
 
 ---
@@ -64,31 +66,61 @@ SAY:
 SAY:
 > "This is the SupportIQ platform. What you're looking at right now is the AI dashboard — but before I show you the intelligence, I want to show you the problem it's solving."
 
-[ACTION: Click **"All Tickets"** in the left sidebar]
+[ACTION: Click **"👁️ Before AI (Manual)"** in the left sidebar — it is under the "Demo" section]
 
-[PAUSE — wait for the ticket table to fully load]
-
-SAY:
-> "This is your support queue. Twenty tickets from real customer scenarios — billing disputes, security breaches, platform outages, technical issues, and happy customers mixed in."
-
-[POINT TO: the ticket table — sweep your cursor slowly down the list]
+[PAUSE — wait for the red banner and the table to fully load]
 
 SAY:
-> "Look at this. Every ticket has a status — OPEN. Every ticket has a priority — MEDIUM. The sentiment column is empty. The risk column is empty.
->
-> This is what your support team sees every morning when they arrive. Twenty items. All looking equally urgent. All requiring human judgment to prioritise."
+> "This is your support queue — exactly as it exists without AI. I want you to look at this carefully."
+
+[POINT TO: the red warning banner at the top]
+
+SAY:
+> "Without AI — every ticket looks the same."
+
+[PAUSE — 3 seconds. Let the banner sink in.]
+
+[POINT TO: the STATUS column — sweep the cursor slowly down the entire column]
+
+SAY:
+> "Status column. Every single row: OPEN. Grey. Identical."
+
+[PAUSE — 2 seconds.]
+
+[POINT TO: the PRIORITY column — sweep the cursor down]
+
+SAY:
+> "Priority column. Every row: MEDIUM. Grey. Identical."
+
+[PAUSE — 2 seconds.]
+
+[POINT TO: the SENTIMENT and RISK columns]
+
+SAY:
+> "Sentiment — not analyzed. Risk — not analyzed. The system knows nothing about any of these customers. Nothing about how angry they are. Nothing about how much revenue is at risk."
 
 [PAUSE — 3 seconds.]
 
+[POINT TO: the footer at the bottom of the table showing the triage hours]
+
 SAY:
-> "Now — I want you to find Sarah Mitchell's ticket. She's in row one. Her subject is 'Double billing — urgent'. She has 50 enterprise seats. She is threatening to dispute with her bank and cancel her entire contract — today.
+> "And look at the bottom of this screen. Ten minutes per ticket, twenty tickets — that is three point three hours of manual reading and sorting every single morning. Before a single customer gets helped. Before one agent picks up the phone. Three point three hours — just to answer the question: 'which one do I open first?'"
+
+[PAUSE — 4 seconds. Let that number sit in the room.]
+
+SAY:
+> "Now — I want you to find Sarah Mitchell. She is in this table somewhere. Her subject says 'Double billing — urgent'. She has fifty enterprise seats. She is threatening to dispute the charge with her bank and cancel her entire contract — today.
 >
-> But looking at this table right now — does she look different from the person asking for an invoice copy in row six?"
+> But looking at this table right now — is she any different from the person asking for an invoice copy three rows down?"
 
-[PAUSE — 3 seconds. Let them look.]
+[PAUSE — 3 seconds. Let them look at the uniform grey rows.]
 
 SAY:
-> "That is the problem. Every ticket looks the same until someone reads it. Let me show you what AI does to this picture."
+> "No. They look exactly the same. That is the problem this system solves.
+>
+> Let me show you what happens when AI is turned on."
+
+[ACTION: Click **"Dashboard"** in the left sidebar]
 
 ---
 
@@ -97,12 +129,10 @@ SAY:
 
 ---
 
-[ACTION: Click **"Dashboard"** in the left sidebar]
-
 [PAUSE — wait for the dashboard to fully load. The health ring and numbers should appear.]
 
 SAY:
-> "This is the AI intelligence dashboard. The moment I open this — the system has already read every ticket in the queue, analysed the language, and given me a complete picture of where we stand."
+> "This is the AI intelligence dashboard. The same twenty tickets you just saw — uniform, grey, unsorted. The moment I open this — the system has already read every one, analysed the language, and given me a complete picture of where we stand."
 
 [POINT TO: the big circular health score ring on the left]
 
