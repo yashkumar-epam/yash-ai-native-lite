@@ -195,6 +195,14 @@ Swagger UI: `http://localhost:8080/swagger-ui.html`
 | `PUT` | `/api/tasks/{taskId}/notes/{noteId}` | Update a note |
 | `DELETE` | `/api/tasks/{taskId}/notes/{noteId}` | Delete a note (204) |
 
+### Note payload
+
+```json
+{ "content": "string (required, max 1000 chars)" }
+```
+
+> `taskId` comes from the URL path — do not include it in the request body.
+
 **AI**
 
 | Method | Path | Description |
