@@ -202,6 +202,8 @@ select option{background:#1a1d2e}
     <div class="nav-section" style="margin-top:8px">Queue</div>
     <div class="nav-item" onclick="go('tickets')"><span>🎫</span> All Tickets <span class="nav-badge warn" id="b-open">—</span></div>
     <div class="nav-item" onclick="go('escalation')"><span>🚨</span> Escalation Queue <span class="nav-badge" id="b-esc">—</span></div>
+    <div class="nav-section" style="margin-top:8px">Demo</div>
+    <div class="nav-item" onclick="go('manual')"><span>👁️</span> Before AI (Manual)</div>
     <div class="nav-section" style="margin-top:8px">AI Tools</div>
     <div class="nav-item" onclick="go('analyze')"><span>🔍</span> Analyze Email</div>
     <div class="nav-item" onclick="go('triage')"><span>⚡</span> Bulk Triage</div>
@@ -284,6 +286,27 @@ select option{background:#1a1d2e}
       <div id="esc-content"><div class="loading"><div class="spin"></div>Loading escalation queue…</div></div>
     </div>
 
+    <!-- MANUAL FLOW -->
+    <div class="page" id="page-manual">
+      <div style="background:linear-gradient(135deg,#1e0a0a 0%,#2d0f0f 100%);border:1.5px solid #ef444440;border-radius:12px;padding:20px 24px;margin-bottom:22px;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+          <span style="font-size:28px">⚠️</span>
+          <div>
+            <div style="font-size:17px;font-weight:700;color:#fca5a5;letter-spacing:.3px">Without AI — Every Ticket Looks The Same</div>
+            <div style="font-size:13px;color:#f87171;margin-top:2px">Raw queue as your agents see it. No triage. No priority signals. No intelligence.</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:14px" id="manual-stats"></div>
+      </div>
+      <div class="card" style="overflow:hidden">
+        <div style="padding:16px 20px 12px;border-bottom:1px solid var(--border)">
+          <div style="font-size:14px;font-weight:600;color:var(--text-dim)">📋 Raw Ticket Queue</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Status: all OPEN &nbsp;|&nbsp; Priority: all MEDIUM &nbsp;|&nbsp; Sentiment: not analyzed &nbsp;|&nbsp; Risk: not analyzed</div>
+        </div>
+        <div id="manual-content"><div class="loading"><div class="spin"></div>Loading…</div></div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -307,7 +330,7 @@ let curPage = 'dashboard'
 let curFilter = null
 let selTriage = new Set()
 
-const TITLES = {dashboard:'Dashboard',tickets:'All Tickets',analyze:'Analyze Raw Email',triage:'Bulk Triage',escalation:'Escalation Queue'}
+const TITLES = {dashboard:'Dashboard',tickets:'All Tickets',analyze:'Analyze Raw Email',triage:'Bulk Triage',escalation:'Escalation Queue',manual:'Before AI — Manual Queue View'}
 
 // ─────────────────────────────────────────────────
 // ROUTER
@@ -325,6 +348,7 @@ function go(page) {
   else if (page==='tickets') loadTickets(curFilter)
   else if (page==='escalation') loadEscalation()
   else if (page==='triage') loadTriageList()
+  else if (page==='manual') loadManual()
 }
 
 function reload() { go(curPage) }
@@ -712,6 +736,100 @@ async function doDelete(id) {
     toast('Ticket deleted','ok')
     if (curPage==='tickets') loadTickets(curFilter)
   } catch(e) { toast('Delete failed: '+e.message,'err') }
+}
+
+// ─────────────────────────────────────────────────
+// MANUAL FLOW (Before AI view)
+// ─────────────────────────────────────────────────
+async function loadManual() {
+  document.getElementById('manual-content').innerHTML = '<div class="loading"><div class="spin"></div>Loading tickets…</div>'
+  try {
+    const tix = await call('GET','/tickets')
+    const analyzed = tix.filter(t=>t.sentimentScore!=null).length
+    const manualMins = tix.length * 10
+    const manualHrs = (manualMins/60).toFixed(1)
+    document.getElementById('manual-stats').innerHTML = `
+      <div style="background:#1a0a0a;border:1px solid #ef444430;border-radius:8px;padding:10px 16px;min-width:120px;text-align:center">
+        <div style="font-size:22px;font-weight:700;color:#fca5a5">${tix.length}</div>
+        <div style="font-size:11px;color:#f87171;margin-top:2px">Total Tickets</div>
+      </div>
+      <div style="background:#1a0a0a;border:1px solid #ef444430;border-radius:8px;padding:10px 16px;min-width:120px;text-align:center">
+        <div style="font-size:22px;font-weight:700;color:#fca5a5">${tix.length}</div>
+        <div style="font-size:11px;color:#f87171;margin-top:2px">All Showing OPEN</div>
+      </div>
+      <div style="background:#1a0a0a;border:1px solid #ef444430;border-radius:8px;padding:10px 16px;min-width:120px;text-align:center">
+        <div style="font-size:22px;font-weight:700;color:#fca5a5">0/${tix.length}</div>
+        <div style="font-size:11px;color:#f87171;margin-top:2px">AI Analyzed</div>
+      </div>
+      <div style="background:#1a0a0a;border:1px solid #ef444430;border-radius:8px;padding:10px 16px;min-width:140px;text-align:center">
+        <div style="font-size:22px;font-weight:700;color:#fca5a5">~${manualHrs} hrs</div>
+        <div style="font-size:11px;color:#f87171;margin-top:2px">Daily Manual Triage</div>
+      </div>`
+    if (!tix.length) {
+      document.getElementById('manual-content').innerHTML = '<div class="empty"><div class="empty-icon">📋</div><div class="empty-title">No tickets found</div></div>'
+      return
+    }
+    const rows = tix.map(t=>`
+      <tr style="border-bottom:1px solid var(--border)">
+        <td style="padding:10px 14px;font-size:12px;color:var(--text-muted)">${t.ticketNumber||'#'+t.id}</td>
+        <td style="padding:10px 14px;font-weight:500;max-width:280px">
+          <div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t.subject}</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:2px">${t.customerName}</div>
+        </td>
+        <td style="padding:10px 14px">
+          <span style="background:#1f2937;color:#9ca3af;border:1px solid #374151;border-radius:4px;padding:2px 8px;font-size:11px;font-weight:600">OPEN</span>
+        </td>
+        <td style="padding:10px 14px">
+          <span style="background:#1f2937;color:#9ca3af;border:1px solid #374151;border-radius:4px;padding:2px 8px;font-size:11px;font-weight:600">MEDIUM</span>
+        </td>
+        <td style="padding:10px 14px;font-size:12px;color:#4b5563;font-style:italic">— not analyzed</td>
+        <td style="padding:10px 14px;font-size:12px;color:#4b5563;font-style:italic">— not analyzed</td>
+        <td style="padding:10px 14px">
+          <button class="btn btn-v btn-sm" onclick="runManualAnalyze(${t.id},'${t.ticketNumber||'#'+t.id}',this)">→ Analyze</button>
+        </td>
+      </tr>`).join('')
+    document.getElementById('manual-content').innerHTML = `
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font-size:13px">
+          <thead>
+            <tr style="background:var(--surface);border-bottom:1px solid var(--border)">
+              <th style="padding:10px 14px;text-align:left;font-size:11px;color:var(--text-muted);font-weight:600;letter-spacing:.5px">TICKET #</th>
+              <th style="padding:10px 14px;text-align:left;font-size:11px;color:var(--text-muted);font-weight:600">SUBJECT / CUSTOMER</th>
+              <th style="padding:10px 14px;text-align:left;font-size:11px;color:var(--text-muted);font-weight:600">STATUS</th>
+              <th style="padding:10px 14px;text-align:left;font-size:11px;color:var(--text-muted);font-weight:600">PRIORITY</th>
+              <th style="padding:10px 14px;text-align:left;font-size:11px;color:var(--text-muted);font-weight:600">SENTIMENT</th>
+              <th style="padding:10px 14px;text-align:left;font-size:11px;color:var(--text-muted);font-weight:600">RISK</th>
+              <th style="padding:10px 14px;text-align:left;font-size:11px;color:var(--text-muted);font-weight:600">ACTION</th>
+            </tr>
+          </thead>
+          <tbody id="manual-tbody">${rows}</tbody>
+        </table>
+      </div>
+      <div style="padding:14px 20px;border-top:1px solid var(--border);background:#0f0505;display:flex;align-items:center;gap:10px">
+        <span style="font-size:16px">⏱️</span>
+        <span style="font-size:13px;color:#f87171"><strong>10 min × ${tix.length} tickets = ${manualHrs} hours</strong> of manual triage every morning — before a single customer gets helped.</span>
+      </div>`
+  } catch(e) {
+    document.getElementById('manual-content').innerHTML = `<div class="alert alert-r">${e.message}</div>`
+  }
+}
+
+async function runManualAnalyze(id, ticketNum, btn) {
+  btn.disabled = true
+  btn.textContent = '⏳'
+  try {
+    await call('POST','/tickets/'+id+'/analyze')
+    toast('✅ '+ticketNum+' analyzed — go to All Tickets to see AI insights','ok')
+    const row = btn.closest('tr')
+    row.style.background = '#0d1f0d'
+    row.style.transition = 'background 0.5s'
+    btn.textContent = '✓ Done'
+    btn.style.opacity = '0.5'
+  } catch(e) {
+    toast('Analysis failed: '+e.message,'err')
+    btn.disabled = false
+    btn.textContent = '→ Analyze'
+  }
 }
 
 // ─────────────────────────────────────────────────
