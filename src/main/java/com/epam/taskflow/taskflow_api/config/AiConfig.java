@@ -13,10 +13,7 @@ public class AiConfig {
     @Bean
     public RestClient dialRestClient(
             @Value("${dial.endpoint}") String dialEndpoint,
-            @Value("${dial.api-key:not-configured}") String dialApiKey) {
-        if ("not-configured".equals(dialApiKey)) {
-            log.warn("DIAL_API_KEY is not set — set the DIAL_API_KEY environment variable to enable AI features");
-        }
+            @Value("${dial.api-key}") String dialApiKey) {
         return RestClient.builder()
                 .baseUrl(dialEndpoint)
                 .defaultHeader("Api-Key", dialApiKey)

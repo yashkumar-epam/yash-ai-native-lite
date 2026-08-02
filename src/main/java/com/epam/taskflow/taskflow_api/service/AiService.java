@@ -65,7 +65,7 @@ public class AiService {
                         Map.of("role", "system", "content", SYSTEM_PROMPT),
                         Map.of("role", "user", "content", userMessage)
                 ),
-                "max_tokens", 2048
+                "max_completion_tokens", 2048
         );
 
         Map<String, Object> response = dialRestClient.post()
