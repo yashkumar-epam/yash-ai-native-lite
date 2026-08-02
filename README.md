@@ -1,5 +1,7 @@
 # TaskFlow API
 
+![CI](https://github.com/yashkumar-epam/yash-ai-native-lite/actions/workflows/ci.yml/badge.svg)
+
 A production-grade Spring Boot 3.x REST API for task management, built as an **AI-native development showcase**. The project demonstrates how modern AI tools — Claude Code, GitHub Copilot, and the GitHub MCP server — can compress a full software development lifecycle from requirements to production-ready code.
 
 ---
@@ -259,6 +261,21 @@ The API starts on `http://localhost:8080`. H2 console is available at `http://lo
 mvn test
 ```
 
+### Run the Postman demo
+
+Import `postman/TaskFlow-Demo.postman_collection.json` into Postman, then run the collection with the **Collection Runner**. It covers the full flow in order:
+
+1. Create a task → captures `taskId`
+2. CRUD operations on the task
+3. Add / update / delete notes → captures `noteId`
+4. Ask the AI two questions about the codebase
+5. Validation error showcase (400s and 404s)
+6. Cleanup (delete the task)
+
+The `baseUrl` collection variable defaults to `http://localhost:8080`. Start the app first with `mvn spring-boot:run`.
+
+---
+
 ### Set up the GitHub MCP server
 
 1. Generate a GitHub Personal Access Token with `repo` scope
@@ -277,7 +294,7 @@ mvn test
 | 4 | GitHub MCP issue-driven feature | Claude Code + **GitHub MCP** | `dueDate` field implemented from issue #3 without re-typing requirements |
 | 5 | Notes sub-resource | Claude Code + specialist agents | Full Notes CRUD (`/api/tasks/{id}/notes/**`) with validation and tests |
 | 6 | RAG over codebase | Claude Code + **EPAM DIAL AI Proxy** | `POST /api/ai/ask` — answers questions about the codebase using `gpt-5-mini-2025-08-07` |
-| 7 | End-to-end showcase | | Full demo pipeline |
+| 7 | End-to-end management showcase | GitHub Actions + Postman | CI pipeline on every push/PR; Postman collection covering full Task → Notes → AI → Validation flow |
 
 ---
 
