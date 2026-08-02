@@ -8,6 +8,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.client.HttpStatusCodeException;
 
 import java.time.LocalDateTime;
 import java.util.stream.Collectors;
@@ -36,6 +37,15 @@ public class GlobalExceptionHandler {
 
         log.warn("Validation failed: {}", validationMessage);
         return buildErrorResponse(HttpStatus.BAD_REQUEST, validationMessage, request.getRequestURI());
+    }
+
+    @ExceptionHandler(HttpStatusCodeException.class)
+    public ResponseEntity<ErrorResponse> handleHttpStatusCodeException(
+            HttpStatusCodeException ex,
+            HttpServletRequest request) {
+        log.error("AI service HTTP error {}: {}", ex.getStatusCode(), ex.getMessage());
+        return buildErrorResponse(HttpStatus.SERVICE_UNAVAILABLE,
+                "AI service error: " + ex.getMessage(), request.getRequestURI());
     }
 
     @ExceptionHandler(Exception.class)
