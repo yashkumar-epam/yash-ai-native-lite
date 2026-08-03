@@ -49,14 +49,14 @@ class NoteServiceTest {
         Note note = Note.builder().id(1L).task(task).content("Test content").build();
         Note savedNote = Note.builder().id(1L).task(task).content("Test content").build();
         NoteResponseDTO responseDTO = NoteResponseDTO.builder().id(1L).taskId(1L).content("Test content").build();
-        NoteRequestDTO requestDTO = NoteRequestDTO.builder().taskId(1L).content("Test content").build();
+        NoteRequestDTO requestDTO = NoteRequestDTO.builder().content("Test content").build();
 
         when(taskRepository.findById(1L)).thenReturn(Optional.of(task));
         when(noteMapper.toEntity(requestDTO, task)).thenReturn(note);
         when(noteRepository.save(note)).thenReturn(savedNote);
         when(noteMapper.toResponseDTO(savedNote)).thenReturn(responseDTO);
 
-        NoteResponseDTO result = noteService.createNote(requestDTO);
+        NoteResponseDTO result = noteService.createNote(1L, requestDTO);
 
         assertNotNull(result);
         assertEquals(1L, result.getId());
@@ -69,13 +69,13 @@ class NoteServiceTest {
 
     @Test
     void createNote_shouldThrowResourceNotFoundException_whenTaskNotFound() {
-        NoteRequestDTO requestDTO = NoteRequestDTO.builder().taskId(1L).content("Test content").build();
+        NoteRequestDTO requestDTO = NoteRequestDTO.builder().content("Test content").build();
 
         when(taskRepository.findById(1L)).thenReturn(Optional.empty());
 
         ResourceNotFoundException exception = assertThrows(
                 ResourceNotFoundException.class,
-                () -> noteService.createNote(requestDTO)
+                () -> noteService.createNote(1L, requestDTO)
         );
 
         assertEquals("Task not found with id: 1", exception.getMessage());
@@ -169,7 +169,7 @@ class NoteServiceTest {
         Note note = Note.builder().id(1L).task(task).content("Old content").build();
         Note updatedNote = Note.builder().id(1L).task(task).content("Updated content").build();
         NoteResponseDTO responseDTO = NoteResponseDTO.builder().id(1L).taskId(1L).content("Updated content").build();
-        NoteRequestDTO requestDTO = NoteRequestDTO.builder().taskId(1L).content("Updated content").build();
+        NoteRequestDTO requestDTO = NoteRequestDTO.builder().content("Updated content").build();
 
         when(noteRepository.findById(1L)).thenReturn(Optional.of(note));
         when(noteRepository.save(note)).thenReturn(updatedNote);
@@ -187,7 +187,7 @@ class NoteServiceTest {
 
     @Test
     void updateNote_shouldThrowResourceNotFoundException_whenNoteNotFound() {
-        NoteRequestDTO requestDTO = NoteRequestDTO.builder().taskId(1L).content("Updated content").build();
+        NoteRequestDTO requestDTO = NoteRequestDTO.builder().content("Updated content").build();
 
         when(noteRepository.findById(1L)).thenReturn(Optional.empty());
 
