@@ -9,6 +9,8 @@ SupportIQ is a **production-architecture AI platform** built on top of the TaskF
 
 The core thesis: **AI should be a callable component, not a rewrite.** The entire AI integration is a thin synchronous gateway over a standard HTTP REST client. No streaming. No embeddings. No orchestration framework. Just structured prompts, typed JSON responses, and a clean error boundary.
 
+**This platform was itself built using a multi-agent AI development system.** Six specialist AI agents — architect, reviewer, tester, support analyst, triage analyst, demo guide — were orchestrated through structured workflows to design, implement, test, and review every feature. The multi-agent system operates at the **SDLC layer** (development tooling), not the runtime layer. At runtime, SupportIQ makes single synchronous AI calls per endpoint. See Section 9 for the full multi-agent SDLC architecture.
+
 ---
 
 ## 2. Technology Stack
@@ -29,6 +31,9 @@ The core thesis: **AI should be a callable component, not a rewrite.** The entir
 | AI proxy | EPAM DIAL (`ai-proxy.lab.epam.com`) | OpenAI-compatible |
 | AI model | `gpt-5-mini-2025-08-07` | via DIAL |
 | Frontend | Vanilla JS SPA (single HTML file) | Served by Spring Boot static |
+| **SDLC — AI dev tool** | **Claude Code** | **Multi-agent orchestration** |
+| **SDLC — Agent model** | **Claude Sonnet 4.6** | **Via Anthropic API** |
+| **SDLC — Workflows** | **JavaScript orchestration scripts** | **`.claude/workflows/`** |
 
 **Key dependency constraint:** No LangChain, no Spring AI, no Anthropic SDK. The AI integration uses only `spring-boot-starter-webmvc` (which includes `RestClient`). This is intentional — it proves the pattern is achievable with zero AI-specific dependencies.
 
@@ -461,60 +466,209 @@ Both signal that the failure is downstream of this service, not a client error. 
 
 ## 9. Multi-Agent SDLC Architecture (Claude Code Layer)
 
-SupportIQ was built using a multi-agent AI development pattern. The `.claude/` directory contains the entire AI development infrastructure used to build the application itself.
+SupportIQ was built using a **multi-agent AI development pipeline**. The `.claude/` directory contains the entire AI development infrastructure — agents, workflows, hooks, and skills — that was used to design, implement, test, and review the application code.
+
+**Critical distinction:**
+- **Runtime layer** (what SupportIQ does): single synchronous AI call per endpoint via `DialGateway`
+- **SDLC layer** (how SupportIQ was built): multi-agent workflows where specialist agents communicate through structured data handoffs
+
+---
 
 ### 9.1 Specialist Agents (`.claude/agents/`)
 
-| Agent | Role |
-|---|---|
-| `taskflow-architect` | Architecture decisions, package design, dependency trade-offs |
-| `taskflow-reviewer` | Pre-merge code quality review, convention audits |
-| `taskflow-tester` | JUnit 5 / MockMvc test generation |
-| `support-analyst-agent` | Support AI prompt engineering, sentiment/escalation logic |
-| `demo-guide-agent` | Demo scripting, management talking points, ROI framing |
-| `support-triage-agent` | Queue management, SLA analysis, triage strategy |
+Each agent is a Markdown file with a custom system prompt — a precise job description. When invoked by a workflow, it runs with the full Claude Code toolset but reasons only within its defined domain.
 
-Each agent is a Markdown file with a custom system prompt. When invoked, it runs with the full Claude Code toolset but with domain-specific reasoning context.
-
-### 9.2 Orchestration Workflows (`.claude/workflows/`)
-
-| Workflow | Orchestration pattern | Description |
+| Agent | Domain | Typed Output |
 |---|---|---|
-| `feature-implementation` | Sequential → parallel per layer | Research → Plan → Implement (controller/service/test in parallel) → Review |
-| `code-review` | 4 parallel agents | Conventions, validation, tests, API design — simultaneously |
-| `test-generation` | Gap analysis → parallel writers | Identify untested paths → write tests per class in parallel |
-| `support-ai-insights` | Gather → 4 parallel analyses → synthesize | Live queue data → Queue Health + Risk + Sentiment + Patterns → Executive briefing |
-| `demo-prep` | Sequential verification | Verify all AI endpoints respond → generate talking points from real data |
+| `taskflow-architect` | Reads requirements + codebase state → produces implementation plan per file | `{ entityChanges, requestDtoChanges, mapperChanges, repositoryChanges, testChanges }` |
+| `taskflow-reviewer` | Checks changed files against 20+ conventions → structured findings | `{ severity: HIGH/MEDIUM/LOW, file, issue, fix }` |
+| `taskflow-tester` | Writes JUnit 5 + MockMvc tests matching acceptance criteria | Complete test methods with `@MockBean`, `@WebMvcTest` patterns |
+| `support-analyst-agent` | Designed system prompts, JSON schema contracts, scoring logic | Prompt text + schema definitions |
+| `support-triage-agent` | Urgency ranking logic, SLA analysis, triage strategy | Triage rules + priority rationale |
+| `demo-guide-agent` | Demo scripts, management talking points, ROI framing | Presentation scripts from real API data |
 
-**`support-ai-insights` workflow architecture** (the most complex):
+**No agent has context it does not need.** Each agent receives only the slice of information relevant to its job. This is enforced by the workflow orchestrator, not by the agents themselves.
+
+---
+
+### 9.2 How Agents Communicate — Structured Data Handoffs
+
+Agents do not send messages to each other directly. They communicate through **typed JSON handoffs** — the output of one agent is the input of the next, passed by the orchestrator.
 
 ```
-Phase 1 — Gather (1 agent, sequential)
-    └─ Fetches /api/support/tickets + /escalation-queue + /dashboard
-       Returns structured summary string
-
-Phase 2 — Analyze (4 agents, parallel)
-    ├─ analyze-queue-health    → score/findings/recommendations
-    ├─ analyze-escalation-risk → score/findings/recommendations
-    ├─ analyze-sentiment-trends → score/findings/recommendations
-    └─ analyze-category-patterns → score/findings/recommendations
-    All receive the same gathered data. No cross-agent communication.
-
-Phase 3 — Synthesize (1 agent, sequential, after barrier)
-    └─ Receives all 4 analyses, dimension scores, urgentActions
-       Returns executive briefing with overallHealthScore, businessRisks, wins
+Step 1 — MCP Reader Agent produces:
+{
+  "title": "Add dueDate field to Task",
+  "requirements": ["Add LocalDate dueDate field", "Validate: past dates rejected"],
+  "acceptanceCriteria": ["POST with past date → 400", "Message: Due date must be today..."]
+}
+         │
+         │  This exact JSON injected into the architect agent's prompt
+         ▼
+Step 2 — Architect Agent produces:
+{
+  "entityChanges":     ["Add LocalDate dueDate with @Column(nullable=true)"],
+  "requestDtoChanges": ["Add @FutureOrPresent with message 'Due date must be today or in the future'"],
+  "responseDtoChanges":["Add LocalDate dueDate field"],
+  "mapperChanges":     ["Map dueDate in toResponseDTO, toEntity, updateEntityFromDTO"],
+  "testChanges":       ["Add pastDate rejection test, futureDate acceptance test"]
+}
+         │
+         │  Plan split — entity slice → entity agent, DTO slice → DTO agent, etc.
+         ▼
+Step 3 — Three implementer agents run in parallel, each receiving only its slice
 ```
 
-The parallel phase (Phase 2) uses a **barrier pattern** — all 4 analyses must complete before synthesis begins, because the synthesizer needs cross-dimensional findings to write a coherent briefing.
+This is the key design principle: **the workflow is the coordinator, the agents are the specialists**. Orchestration logic (what runs in parallel, what waits, what data flows forward) is deterministic JavaScript — not model-driven.
 
-### 9.3 Automated Quality Hooks (`.claude/hooks/`)
+---
+
+### 9.3 Feature Implementation Workflow — Full Pipeline
+
+Every SupportIQ feature was built through this 6-phase pipeline (`feature-implementation.js`):
+
+```
+GitHub Issue #N  ──────────────────────────────────────────────────────
+                                                                        │
+PHASE 1 — RESEARCH  (2 agents in PARALLEL)                             │
+  Agent A: mcp-read-issue                                               │
+    └─ GitHub MCP server reads issue #N                                 │
+    └─ Returns: { title, requirements[], acceptanceCriteria[] }         │
+                                                                        │
+  Agent B: read-source-files                                            │
+    └─ Reads 6 current Java source files                                │
+    └─ Returns: current fields, methods, imports per file               │
+                                                                        │
+  [Both run simultaneously — outputs MERGED by orchestrator]           │
+                 │                                                      │
+                 ▼                                                      │
+PHASE 2 — PLAN  (taskflow-architect agent, sequential)                  │
+  Input:  issue requirements + current codebase state                   │
+  Output: typed plan JSON — exact changes per file                      │
+                 │                                                      │
+                 ▼                                                      │
+PHASE 3 — IMPLEMENT  (3 agents in PARALLEL)                             │
+  Agent A: impl-entity      ← receives plan.entityChanges               │
+  Agent B: impl-request-dto ← receives plan.requestDtoChanges           │
+  Agent C: impl-response-dto← receives plan.responseDtoChanges          │
+  [All three edit different files simultaneously]                       │
+                 │                                                      │
+                 ▼  (waits for Phase 3 — mapper depends on DTOs)        │
+PHASE 4 — INTEGRATE  (2 agents in PARALLEL)                             │
+  Agent A: impl-mapper      ← receives plan.mapperChanges               │
+  Agent B: impl-repository  ← receives plan.repositoryChanges           │
+                 │                                                      │
+                 ▼                                                      │
+PHASE 5 — TEST  (2 taskflow-tester agents in PARALLEL)                  │
+  Agent A: test-service     ← receives plan.testChanges                 │
+  Agent B: test-controller  ← receives issue.acceptanceCriteria         │
+    └─ Each criterion becomes one test assertion                        │
+                 │                                                      │
+                 ▼                                                      │
+PHASE 6 — REVIEW  (taskflow-reviewer agent, sequential)                 │
+  Input:  original requirements + all changed files                     │
+  Output: { readyToCommit: true/false, conventionViolations: [] }       │
+                 │                                                      │
+                 ▼                                                      │
+  git commit "feat: <title> closes #N"  ──────────────────────────────
+```
+
+**Total agents per feature:** 9 (2 research + 1 architect + 3 implementers + 2 testers + 1 reviewer)
+**Parallel phases:** 4 (research, implement, integrate, test all use parallel agents)
+
+---
+
+### 9.4 Code Review Workflow — 4 Parallel Specialist Reviewers
+
+Before any code was committed, a dedicated review workflow ran (`code-review.js`):
+
+```
+git diff (changed files + Java diffs)
+         │
+         ▼
+PHASE 1 — GATHER  (1 agent)
+  Collects changed file list + full diff content
+         │
+         │  Same diff content passed to ALL 4 reviewers below
+         ▼
+PHASE 2 — REVIEW  (4 taskflow-reviewer agents in PARALLEL)
+  Agent 1: review-conventions
+    └─ @Autowired, @Transactional, @Slf4j, entity leaking to controller
+
+  Agent 2: review-validation
+    └─ Exact message strings, @Valid, constraint annotations
+
+  Agent 3: review-tests
+    └─ @MockBean not @Mock, happy+error paths, new fields in builders
+
+  Agent 4: review-api-design
+    └─ HTTP status codes, path naming, OpenAPI annotations
+         │
+         │  4 structured finding sets MERGED
+         ▼
+PHASE 3 — SYNTHESIZE  (1 agent, sequential)
+  Input:  all findings across all 4 dimensions
+  Output: APPROVED / NEEDS CHANGES + prioritised fix list
+```
+
+---
+
+### 9.5 Support AI Insights Workflow — Live Queue Intelligence
+
+This workflow runs against the live SupportIQ API and produces an executive briefing (`support-ai-insights.js`):
+
+```
+Live REST API  ──────────────────────────────────────────────────────
+         │
+         ▼
+PHASE 1 — GATHER  (1 agent)
+  GET /api/support/tickets
+  GET /api/support/tickets/escalation-queue
+  GET /api/support/dashboard
+  Returns: structured queue summary (counts, sentiment, categories)
+         │
+         │  Same queue data passed to ALL 4 analysts below
+         ▼
+PHASE 2 — ANALYZE  (4 agents in PARALLEL, each a different lens)
+  Agent 1: Queue Health & Operations     → score 0–100 + findings
+  Agent 2: Escalation & Churn Risk       → score 0–100 + findings
+  Agent 3: Customer Sentiment & Experience → score 0–100 + findings
+  Agent 4: Issue Patterns & Root Cause   → score 0–100 + findings
+         │
+         │  All 4 scores + all findings MERGED (barrier pattern)
+         ▼
+PHASE 3 — SYNTHESIZE  (1 agent, sequential)
+  Input:  4 dimension scores + cross-dimensional findings
+  Output: executive briefing — overallHealthScore, businessRisks,
+          wins, topPriorityActions (VP-readable in 2 minutes)
+```
+
+The **barrier pattern** in Phase 2 is intentional — synthesis requires all four dimensions before it can produce a coherent cross-cutting briefing.
+
+---
+
+### 9.6 Automated Quality Hooks (`.claude/hooks/`)
 
 | Hook | Fires on | Action |
 |---|---|---|
 | `post-java-edit` | Any `.java` file edited | `mvn compile -q` — catch compilation errors immediately |
 | `pre-commit` | Before `git commit` | `mvn test -q` — block commit if any test fails |
 
-The pre-commit hook means the test suite is a hard gate on every commit. 103 tests must pass before any code enters git history.
+The pre-commit hook is a hard gate — 103 tests must pass before any code enters git history. This applied to every agent-generated commit as well as manual commits.
+
+---
+
+### 9.7 Multi-Agent Results
+
+| Metric | Value |
+|---|---|
+| Specialist agents | 6 |
+| Orchestration workflows | 5 |
+| Parallel agent phases across all workflows | 8 |
+| Maximum agents running simultaneously | 4 (code-review + support-ai-insights) |
+| Tests generated by taskflow-tester agent | 103+ |
+| Features implemented via feature-implementation workflow | All SupportIQ endpoints |
+| Development timeline | Day 8 of AI-Native Engineering Series |
 
 ---
 
